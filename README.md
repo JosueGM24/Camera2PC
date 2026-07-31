@@ -120,7 +120,24 @@ navegador no puede, y nosotros ponemos el transporte.
 4. Arrastra ahí las ventanas que quieras.
 5. En `screen.html`, al compartir elige **ese** monitor.
 
-`/screen` tiene la guía paso a paso en pantalla, visible hasta que la marcas como hecha.
+`/screen` tiene la guía paso a paso en pantalla, visible hasta que la marcas como hecha, y
+un botón **Comprobar monitores** que lista lo que ve Windows (Window Management API,
+`js/displays.js`) para que no instales el driver a ciegas: confirmas que apareció el
+monitor nuevo, ves su resolución real en píxeles y sabes cuál elegir al compartir. Sólo
+Chrome y Edge de escritorio, y pide permiso la primera vez.
+
+### Por qué no escribimos nosotros el driver
+
+Es la pregunta obvia y la respuesta es que **no compensa**. Escribir un IddCx es viable
+—Microsoft publica un ejemplo de referencia—, pero Windows x64 no instala un driver sin
+firma, y eso exige un **certificado EV de firma de código** (~250-450 USD/año, con
+verificación de identidad de la organización y token físico) más **firma por atestación**
+en el Hardware Dev Center, repetida en cada actualización. Coste recurrente y una tubería
+de publicación, para llegar exactamente al mismo resultado que Virtual Display Driver, que
+ya es gratuito, abierto y está firmado.
+
+Tampoco hay atajo: Windows no expone ninguna API de usuario para crear una pantalla. Tiene
+que ser a nivel de driver, por diseño.
 
 **A favor:** no instalas nada en la tablet, sólo el navegador, y viaja por el mismo enlace
 USB. **En contra:** sin táctil — tocar la tablet no controla Windows — y ~100-300 ms de

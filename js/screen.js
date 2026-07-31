@@ -6,6 +6,7 @@
 import { KIND_SCREEN, clearRoomOnUnload } from './signaling.js';
 import { createSender } from './sender.js';
 import { createLink, paintIcons, rememberFolds, flashConfirm } from './ui.js';
+import { listDisplays, formatDisplays } from './displays.js';
 import {
   params, randomRoomCode, normalizeRoomCode, absoluteUrl,
   CONNECTION_LABELS, makeStatus, describeConnection, formatConnection, showFatal,
@@ -158,6 +159,20 @@ const markSetup = (done) => {
 markSetup(localStorage.getItem(SETUP_KEY) === '1');
 $('btnSetupDone').onclick = () => markSetup(true);
 $('btnSetupAgain').onclick = () => markSetup(false);
+
+// Comprobar los monitores que ve Windows: el paso del driver virtual deja de
+// hacerse a ciegas. No podemos crear una pantalla, pero si mirarlas.
+$('btnDetect').onclick = async () => {
+  const out = $('displays');
+  out.textContent = 'Consultando...';
+  try {
+    out.textContent = formatDisplays(await listDisplays());
+  } catch (err) {
+    out.textContent = err.code === 'unsupported'
+      ? 'Este navegador no puede leer la lista de monitores. Usa Chrome o Edge de escritorio; la lista tambien sale en Configuracion > Pantalla de Windows.'
+      : 'Hace falta dar permiso de gestion de ventanas. Vuelve a pulsar y acepta el aviso del navegador.';
+  }
+};
 
 window.addEventListener('pagehide', () => {
   if (sender) clearRoomOnUnload(roomId, KIND_SCREEN);
