@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Recibir camara — Camera2PC</title>
+<title>Camara para reuniones - Camera2PC</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/app.css">
 </head>
@@ -16,9 +16,9 @@
       <circle class="node-a" cx="6" cy="15" r="4"/>
       <circle class="node-b" cx="24" cy="15" r="4"/>
     </svg>
-    <h1>Recibir camara</h1>
+    <h1>Camara para reuniones</h1>
     <span class="spacer"></span>
-    <a class="back" href="index.html">Inicio</a>
+    <a class="back" href="/">Inicio</a>
   </header>
 
   <div id="fatal" hidden></div>
@@ -76,24 +76,53 @@
         </p>
       </div>
 
-      <details class="fold" id="fold-obs" style="margin-top:16px">
-        <summary><svg data-icon="camera"></svg> Usarla en Teams o Zoom</summary>
-        <div class="fold-body">
-          <div class="copybar" style="margin-top:0">
-            <input type="text" id="obsUrl" readonly aria-label="Direccion para OBS">
-            <button id="btnCopyObs" title="Copiar" aria-label="Copiar direccion para OBS">
-              <svg data-icon="copy" style="width:15px;height:15px"></svg></button>
-          </div>
-          <ol class="steps" style="margin-top:16px">
-            <li>OBS &rarr; <b>Fuentes &rarr; + &rarr; Navegador</b>, pega la direccion.</li>
-            <li>Ancho <code>1920</code>, alto <code>1080</code>, FPS <code>30</code>.</li>
-            <li>Marca <i>Controlar audio mediante OBS</i> si quieres el microfono.</li>
-            <li>Clic derecho en la fuente &rarr; <b>Cambiar a pantalla completa</b>.</li>
-            <li>Pulsa <b>Iniciar camara virtual</b>.</li>
-            <li>En Teams o Zoom, elige <code>OBS Virtual Camera</code>.</li>
-          </ol>
+      <section class="setup" id="setup" style="margin-top:16px">
+        <h2>Para tu reunion</h2>
+        <p class="why">
+          Zoom, Meet y Teams solo pueden elegir camaras del sistema, y una pagina web
+          no puede registrar una. OBS Studio si: crea una camara virtual a partir de
+          esta pagina. Se configura <b>una sola vez</b>.
+        </p>
+
+        <ol class="steps">
+          <li>Instala <a href="https://obsproject.com/download" target="_blank"
+              rel="noopener">OBS Studio</a> y abrelo.</li>
+          <li>En OBS: <b>Ajustes &rarr; Video</b>, pon resolucion base y de salida en
+            <code>1920x1080</code>. Si no, saldran barras negras.</li>
+          <li><b>Fuentes &rarr; + &rarr; Navegador</b>. Pega esta direccion y pon ancho
+            <code>1920</code>, alto <code>1080</code>:
+            <span class="copybar">
+              <input type="text" id="obsUrl" readonly aria-label="Direccion para OBS">
+              <button id="btnCopyObs" title="Copiar" aria-label="Copiar direccion para OBS">
+                <svg data-icon="copy" style="width:15px;height:15px"></svg></button>
+            </span>
+            Marca <i>Controlar audio mediante OBS</i> si quieres tambien el microfono
+            del telefono.
+          </li>
+          <li>Clic derecho en la fuente &rarr; <b>Cambiar a pantalla completa</b>.</li>
+          <li>Pulsa <b>Iniciar camara virtual</b>, abajo a la derecha.</li>
+          <li>En tu reunion, elige la camara <code>OBS Virtual Camera</code>:
+            <span class="apps">
+              <span class="app">Meet: ajustes &rarr; video</span>
+              <span class="app">Zoom: video &rarr; camara</span>
+              <span class="app">Teams: dispositivos</span>
+            </span>
+          </li>
+        </ol>
+
+        <p class="note" style="margin-bottom:16px">
+          Si la reunion ya estaba abierta, cierrala y vuelve a entrar: muchas apps solo
+          leen la lista de camaras al arrancar.
+        </p>
+
+        <button id="btnSetupDone">Ya lo configure</button>
+
+        <div class="done-line">
+          <svg data-icon="check"></svg>
+          <span>OBS configurado. Deja esta pestana abierta durante la reunion.</span>
+          <button id="btnSetupAgain">Ver pasos</button>
         </div>
-      </details>
+      </section>
     </div>
   </div>
 

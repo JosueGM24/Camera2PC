@@ -19,8 +19,8 @@ const roomId =
   randomRoomCode();
 localStorage.setItem(STORE_KEY, roomId);
 
-const phoneUrl = absoluteUrl('phone.html', { room: roomId });
-const obsUrl = absoluteUrl('obs.html', { room: roomId });
+const phoneUrl = absoluteUrl('/phone', { room: roomId });
+const obsUrl = absoluteUrl('/obs', { room: roomId });
 
 $('code').textContent = roomId;
 $('phoneUrl').value = phoneUrl;
@@ -153,6 +153,17 @@ const copy = async (input, button) => {
 };
 $('btnCopyPhone').onclick = () => copy($('phoneUrl'), $('btnCopyPhone'));
 $('btnCopyObs').onclick = () => copy($('obsUrl'), $('btnCopyObs'));
+
+// --- configuracion de OBS: prominente hasta que este hecha ------------------
+const SETUP_KEY = 'camera2pc.obsReady';
+const setup = $('setup');
+const markSetup = (done) => {
+  setup.dataset.done = done ? '1' : '0';
+  try { localStorage.setItem(SETUP_KEY, done ? '1' : '0'); } catch { /* modo privado */ }
+};
+markSetup(localStorage.getItem(SETUP_KEY) === '1');
+$('btnSetupDone').onclick = () => markSetup(true);
+$('btnSetupAgain').onclick = () => markSetup(false);
 
 $('btnNew').onclick = () => {
   const code = randomRoomCode();

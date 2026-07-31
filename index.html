@@ -23,16 +23,17 @@
   </header>
 
   <p class="lede">
-    Convierte el telefono y la tablet que ya tienes en periféricos de tu PC.
-    El video viaja directo entre los dos aparatos; el servidor solo los presenta.
+    Usa la camara de tu telefono en Zoom, Google Meet o Teams, con mucha mejor
+    imagen que la webcam de la laptop. El video viaja directo entre los dos
+    aparatos, por Wi-Fi o por cable.
   </p>
 
   <!-- El patchbay: cada extremo es el enlace a su pagina. -->
   <div class="bay">
     <section class="route" data-flow="cam">
-      <p class="eyebrow">Camara</p>
+      <p class="eyebrow">Camara para reuniones</p>
       <div class="route-line">
-        <a class="node" href="phone.html" id="node-phone">
+        <a class="node" href="/phone" id="node-phone">
           <svg class="glyph" viewBox="0 0 46 40" fill="none" stroke="currentColor"
                stroke-width="1.75" stroke-linecap="round" aria-hidden="true"
                data-glyph="phone"></svg>
@@ -40,7 +41,7 @@
           <span class="device">Telefono</span>
         </a>
         <div class="wire-box" id="wire-cam"></div>
-        <a class="node" href="pc.html" id="node-pc">
+        <a class="node" href="/pc" id="node-pc">
           <svg class="glyph" viewBox="0 0 46 40" fill="none" stroke="currentColor"
                stroke-width="1.75" stroke-linecap="round" aria-hidden="true"
                data-glyph="pc"></svg>
@@ -48,12 +49,16 @@
           <span class="device">PC</span>
         </a>
       </div>
+      <p class="note" style="margin-top:16px">
+        Empieza en <b>Recibir</b>: ahi esta el codigo para el telefono y la
+        configuracion de una sola vez para que Zoom, Meet o Teams vean la camara.
+      </p>
     </section>
 
     <section class="route" data-flow="screen">
       <p class="eyebrow">Pantalla</p>
       <div class="route-line">
-        <a class="node" href="screen.html">
+        <a class="node" href="/screen">
           <svg class="glyph" viewBox="0 0 46 40" fill="none" stroke="currentColor"
                stroke-width="1.75" stroke-linecap="round" aria-hidden="true"
                data-glyph="pc"></svg>
@@ -61,7 +66,7 @@
           <span class="device">PC</span>
         </a>
         <div class="wire-box" id="wire-screen"></div>
-        <a class="node" href="view.html">
+        <a class="node" href="/view">
           <svg class="glyph" viewBox="0 0 46 40" fill="none" stroke="currentColor"
                stroke-width="1.75" stroke-linecap="round" aria-hidden="true"
                data-glyph="tablet"></svg>
@@ -96,37 +101,22 @@
     </div>
   </details>
 
-  <details class="fold" id="fold-obs">
-    <summary><svg data-icon="camera"></svg> Usarla como camara web en Teams o Zoom</summary>
-    <div class="fold-body">
-      <ol class="steps">
-        <li>Abre <b>Recibir</b> en la PC y copia la <b>direccion para OBS</b>.</li>
-        <li>En OBS Studio: <b>Fuentes &rarr; + &rarr; Navegador</b>. Pega la direccion,
-          ancho <code>1920</code>, alto <code>1080</code>.</li>
-        <li>Clic derecho en la fuente &rarr; <b>Cambiar a pantalla completa</b>.</li>
-        <li>Pulsa <b>Iniciar camara virtual</b>.</li>
-        <li>En Teams o Zoom, elige la camara <code>OBS Virtual Camera</code>.</li>
-      </ol>
-      <p class="note">
-        El navegador no puede registrar una camara del sistema por si solo. OBS aporta
-        ese driver, ya firmado, asi no instalas nada hecho a mano.
-      </p>
-    </div>
-  </details>
-
   <details class="fold" id="fold-monitor">
-    <summary><svg data-icon="monitor"></svg> Segundo monitor: hasta donde llega</summary>
+    <summary><svg data-icon="monitor"></svg> Segundo monitor: como queda extendido</summary>
     <div class="fold-body">
       <p>
-        <b>Compartir</b> manda un monitor, una ventana o una pestana a la tablet. Es un
-        <b>monitor espejo</b>: Windows no ve la tablet como pantalla, asi que no puedes
-        arrastrar ventanas ahi ni controlar la PC tocandola.
+        Una pagina web no puede registrar una pantalla en Windows, igual que no puede
+        registrar una camara. La pieza que falta es un <b>driver de pantalla virtual</b>:
+        se instala una vez, Windows te da un monitor extra autentico al que arrastras
+        ventanas, y <b>Compartir</b> lo manda a la tablet.
       </p>
       <p>
-        Para un escritorio extendido de verdad, instala un <b>driver de pantalla
-        virtual</b> (Virtual Display Driver, gratuito). Windows te da un monitor extra
-        autentico; en <b>Compartir</b> eliges ese monitor y la tablet lo muestra. Mismo
-        patron que OBS con la camara.
+        No instalas nada en la tablet, solo el navegador, y viaja por el mismo cable USB.
+        Los pasos estan dentro de <b>Compartir</b>.
+      </p>
+      <p class="note">
+        Sin el driver sigue funcionando como espejo, que sirve para mandar una ventana
+        suelta a la tablet sin tocar tu escritorio.
       </p>
     </div>
   </details>

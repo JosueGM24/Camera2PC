@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Compartir pantalla — Camera2PC</title>
+<title>Compartir pantalla - Camera2PC</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/app.css">
 </head>
@@ -18,7 +18,7 @@
     </svg>
     <h1>Compartir pantalla</h1>
     <span class="spacer"></span>
-    <a class="back" href="index.html">Inicio</a>
+    <a class="back" href="/">Inicio</a>
   </header>
 
   <div id="fatal" hidden></div>
@@ -105,20 +105,41 @@
         </div>
       </details>
 
-      <details class="fold" id="fold-limits">
-        <summary><svg data-icon="monitor"></svg> Hasta donde llega</summary>
-        <div class="fold-body">
-          <p>
-            Esto es un <b>monitor espejo</b>: Windows no ve la tablet como pantalla, asi
-            que no puedes arrastrar ventanas ahi ni controlar la PC tocandola.
-          </p>
-          <p>
-            Para un escritorio extendido de verdad, instala un <b>driver de pantalla
-            virtual</b> (Virtual Display Driver, gratuito). Windows te da un monitor
-            extra autentico; aqui eliges ese monitor y la tablet lo muestra.
-          </p>
+      <section class="setup" id="setup" style="margin-top:16px">
+        <h2>Monitor extendido de verdad</h2>
+        <p class="why">
+          Tal cual, esto es un <b>espejo</b>: la tablet ve lo que capturas, pero Windows
+          no la reconoce como pantalla y no puedes arrastrar ventanas ahi. Para que si
+          pueda, hace falta un <b>driver de pantalla virtual</b>. Se instala
+          <b>una sola vez</b>.
+        </p>
+
+        <ol class="steps">
+          <li>Descarga <a href="https://github.com/itsmikethetech/Virtual-Display-Driver/releases"
+              target="_blank" rel="noopener">Virtual Display Driver</a> (gratuito, codigo
+            abierto) y sigue las instrucciones de instalacion de esa misma pagina: el
+            procedimiento cambia entre versiones.</li>
+          <li>Windows &rarr; <b>Configuracion &rarr; Pantalla</b>. Aparece un monitor
+            nuevo. Elige <b>Extender estas pantallas</b>.</li>
+          <li>Ponle a ese monitor <b>la resolucion de tu tablet</b>. La tablet te la dice
+            al abrir <b>Ver</b>: sale escrita en la pantalla de espera.</li>
+          <li>Colocalo en el mapa de pantallas donde te resulte comodo y arrastra ahi las
+            ventanas que quieras.</li>
+          <li>Vuelve aqui, pulsa <b>Compartir pantalla</b> y elige <b>ese</b> monitor.</li>
+        </ol>
+
+        <p class="note" style="margin-bottom:16px">
+          Sigue sin haber tactil: tocar la tablet no controla Windows.
+        </p>
+
+        <button id="btnSetupDone">Ya lo configure</button>
+
+        <div class="done-line">
+          <svg data-icon="check"></svg>
+          <span>Monitor virtual listo. Al compartir, elige ese monitor.</span>
+          <button id="btnSetupAgain">Ver pasos</button>
         </div>
-      </details>
+      </section>
     </div>
   </div>
 

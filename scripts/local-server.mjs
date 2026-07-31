@@ -145,7 +145,10 @@ async function serveStatic(req, res, url) {
   if (rel === '/' || rel.endsWith('/')) rel += 'index.html';
 
   // Normaliza a separadores '/' y quita el prefijo, sin dejar que '..' escale.
-  const clean = normalize(rel).split(sep).join('/').replace(/^\/+/, '');
+  let clean = normalize(rel).split(sep).join('/').replace(/^\/+/, '');
+
+  // URL limpia: /pc sirve pc.html, igual que hace Netlify.
+  if (!/\.[a-z0-9]+$/i.test(clean)) clean += '.html';
 
   if (clean.includes('..') || !ALLOWED.some((re) => re.test(clean))) {
     res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });

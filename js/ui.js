@@ -113,6 +113,7 @@ const ICONS = {
   monitor: '<rect x="2.5" y="5" width="19" height="12" rx="1.5"/><path d="M9 20h6M12 17v3"/>',
   camera: '<rect x="2.5" y="7" width="13" height="10" rx="2"/><path d="m15.5 12 6-3.5v11l-6-3.5z"/>',
   check: '<path d="m4.5 12.5 5 5 10-11"/>',
+  scan: '<path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15"/><path d="M4 12h16"/>',
 };
 
 /** Inserta el trazo de un icono en cada <svg data-icon="nombre"> de la pagina. */

@@ -1,6 +1,7 @@
 import { KIND_CAM, clearRoomOnUnload } from './signaling.js';
 import { createSender } from './sender.js';
 import { createLink, paintIcons, rememberFolds } from './ui.js';
+import { createScanner, roomFromScan, qrReadable } from './scanner.js';
 import {
   params, normalizeRoomCode, CONNECTION_LABELS, makeStatus,
   createWakeLock, describeConnection, formatConnection, showFatal,
@@ -102,6 +103,8 @@ function watchRoute() {
 
 // --- transmision ------------------------------------------------------------
 async function start() {
+  if (scanner.active) closeScanner();
+
   roomId = normalizeRoomCode($('room').value);
   if (roomId.length < 4) {
     setStatus('Falta el codigo de la PC', 'bad');
@@ -135,6 +138,8 @@ async function start() {
 
   $('btnStop').disabled = false;
   $('btnSwitch').disabled = false;
+  $('btnScan').disabled = true;
+  $('room').disabled = true;
   $('resolution').disabled = true;
   $('mode').disabled = true;
 }
@@ -155,6 +160,8 @@ async function stop() {
   $('btnStop').disabled = true;
   $('btnSwitch').disabled = true;
   $('btnTorch').disabled = true;
+  $('btnScan').disabled = false;
+  $('room').disabled = false;
   $('resolution').disabled = false;
   $('mode').disabled = false;
 }
@@ -177,6 +184,49 @@ async function useCamera(nextFacing) {
   }
   $('btnSwitch').disabled = !sender;
 }
+
+// --- lector de QR -----------------------------------------------------------
+// Evita tener que salir a una app de codigos: se escanea aqui y se transmite.
+const scanner = createScanner({
+  videoEl: $('preview'),
+  onCode: (raw) => {
+    const code = normalizeRoomCode(roomFromScan(raw));
+    closeScanner();
+    if (code.length < 4) {
+      setStatus('Ese codigo no es de esta app', 'bad');
+      return;
+    }
+    $('room').value = code;
+    start().catch((err) => setStatus(`Error: ${err.message}`, 'bad'));
+  },
+  onError: (err) => {
+    closeScanner();
+    setStatus(`No pude abrir la camara: ${err.name}`, 'bad');
+  },
+});
+
+function openScanner() {
+  $('viewfinder').hidden = false;
+  $('stage').classList.add('live');
+  setStatus('Buscando el codigo', 'wait');
+  scanner.start();
+}
+
+function closeScanner() {
+  scanner.stop();
+  $('viewfinder').hidden = true;
+  $('stage').classList.remove('live');
+}
+
+$('btnScan').onclick = async () => {
+  if (!(await qrReadable())) {
+    tip('Este navegador no lee codigos QR. Escribe el codigo que muestra la PC.');
+    $('room').focus();
+    return;
+  }
+  openScanner();
+};
+$('btnScanCancel').onclick = () => { closeScanner(); setStatus('Listo'); };
 
 // --- eventos ----------------------------------------------------------------
 $('camera').addEventListener('change', (e) => {

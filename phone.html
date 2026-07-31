@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Transmitir camara — Camera2PC</title>
+<title>Transmitir camara - Camera2PC</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/app.css">
 </head>
@@ -20,7 +20,7 @@
     </svg>
     <h1>Transmitir</h1>
     <span class="spacer"></span>
-    <a class="back" href="index.html">Inicio</a>
+    <a class="back" href="/">Inicio</a>
   </header>
 
   <div id="fatal" hidden></div>
@@ -28,6 +28,13 @@
   <div class="stage" id="stage">
     <video id="preview" autoplay playsinline muted></video>
     <div class="waiting-for"><div>Vista previa de la camara</div></div>
+
+    <div class="viewfinder" id="viewfinder" hidden>
+      <div class="vf-box"><i></i><i></i></div>
+      <p class="vf-hint">Apunta al codigo de la PC</p>
+      <button id="btnScanCancel">Cancelar</button>
+    </div>
+
     <div class="stage-tools">
       <button class="icon-btn" id="btnSwitch" title="Cambiar de camara"
               aria-label="Cambiar de camara" disabled>
@@ -41,8 +48,13 @@
   <div class="panel" style="margin-top:16px">
     <label class="field">
       <span class="lbl">Codigo de sala</span>
-      <input type="text" id="room" inputmode="latin" autocapitalize="characters"
-             autocomplete="off" spellcheck="false" placeholder="ABC123">
+      <span class="inputrow">
+        <input type="text" id="room" inputmode="latin" autocapitalize="characters"
+               autocomplete="off" spellcheck="false" placeholder="ABC123">
+        <button id="btnScan" title="Escanear el codigo de la PC"
+                aria-label="Escanear el codigo de la PC">
+          <svg data-icon="scan"></svg></button>
+      </span>
     </label>
     <div class="row">
       <button id="btnStart" class="go" style="flex:2 1 60%">Transmitir</button>

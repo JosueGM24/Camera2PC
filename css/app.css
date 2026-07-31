@@ -430,6 +430,45 @@ input[type="text"]:focus, select:focus { border-color: var(--ink-600); }
 .row { display: flex; gap: 8px; flex-wrap: wrap; }
 .row > * { flex: 1 1 auto; }
 
+/* Campo con un boton pegado (codigo + escanear). */
+.inputrow { display: flex; gap: 8px; }
+.inputrow input { flex: 1 1 auto; min-width: 0; }
+.inputrow button { flex: 0 0 auto; padding-left: 14px; padding-right: 14px; }
+.inputrow button svg { width: 18px; height: 18px; display: block; }
+
+/* --- visor del lector de QR ---------------------------------------------- */
+.viewfinder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 18px;
+  pointer-events: none;
+  background: rgba(20, 21, 24, .35);
+}
+.vf-box { width: min(56%, 210px); aspect-ratio: 1; position: relative; }
+.vf-box i, .vf-box::before, .vf-box::after {
+  content: "";
+  position: absolute;
+  width: 30px; height: 30px;
+  border: 2.5px solid var(--signal);
+}
+.vf-box::before { top: 0; left: 0; border-right: 0; border-bottom: 0; border-radius: 4px 0 0 0; }
+.vf-box::after { bottom: 0; right: 0; border-left: 0; border-top: 0; border-radius: 0 0 4px 0; }
+.vf-box i:first-child { top: 0; right: 0; border-left: 0; border-bottom: 0; border-radius: 0 4px 0 0; }
+.vf-box i:last-child { bottom: 0; left: 0; border-right: 0; border-top: 0; border-radius: 0 0 0 4px; }
+.vf-hint {
+  margin: 0;
+  font-family: var(--face-panel);
+  font-size: 12.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-100);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .8);
+}
+.viewfinder button { pointer-events: auto; }
+
 button {
   font: 600 13px/1 var(--face-panel);
   letter-spacing: .08em;
@@ -456,6 +495,57 @@ button.stop { color: var(--alert); }
 .copybar { display: flex; gap: 8px; margin-top: 14px; }
 .copybar input { flex: 1 1 auto; min-width: 0; font-size: 12px; letter-spacing: .02em; }
 .copybar button { flex: 0 0 auto; }
+
+/* --- configuracion de una sola vez ---------------------------------------
+   Visible y con peso mientras haga falta; una linea discreta cuando ya esta
+   hecha. Es el objetivo principal de la app, no puede vivir en un desplegable.
+   --------------------------------------------------------------------------- */
+.setup {
+  background: var(--ink-800);
+  border: 1px solid var(--signal);
+  border-radius: var(--r-lg);
+  padding: 18px;
+}
+.setup > h2 {
+  font-size: 12px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: 10px;
+}
+.setup .why { color: var(--ink-300); font-size: 13.5px; margin: 0 0 16px; }
+.setup ol.steps { margin-bottom: 18px; }
+.setup .apps {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 14px 0 0;
+}
+.setup .app {
+  font-family: var(--face-panel);
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-200);
+  background: var(--ink-850);
+  border: 1px solid var(--ink-650);
+  border-radius: 999px;
+  padding: 5px 11px;
+}
+
+/* Estado "ya configurado": la misma informacion, sin ocupar la pagina. */
+.setup[data-done="1"] > *:not(.done-line) { display: none; }
+.setup[data-done="1"] { border-color: var(--ink-650); padding: 13px 16px; }
+.done-line { display: none; align-items: center; gap: 10px; font-size: 13.5px; color: var(--ink-300); }
+.setup[data-done="1"] .done-line { display: flex; }
+.done-line svg { width: 17px; height: 17px; color: var(--signal); flex: none; }
+.done-line button {
+  margin-left: auto;
+  padding: 7px 11px;
+  font-size: 11px;
+  background: none;
+  border-color: var(--ink-650);
+}
 
 /* --- divulgacion progresiva: la cura de lo abrumador --------------------- */
 details.fold {

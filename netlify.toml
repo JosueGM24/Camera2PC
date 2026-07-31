@@ -1,6 +1,7 @@
 [build]
   publish = "."
-  # Genera js/env.generated.js (config ICE). No falla si no hay variables.
+  # Genera js/env.generated.js a partir de las variables de entorno del sitio.
+  # Configuralas en: Site configuration > Environment variables.
   command = "node scripts/build-config.mjs"
 
 [functions]
@@ -13,6 +14,39 @@
   to = "/.netlify/functions/signal"
   status = 200
   force = true
+
+# URLs sin extension. Netlify ya lo hace solo, pero explicito no falla nunca:
+# la direccion que se pega en OBS y la que va en el QR quedan mas cortas.
+[[redirects]]
+  from = "/pc"
+  to = "/pc.html"
+  status = 200
+[[redirects]]
+  from = "/phone"
+  to = "/phone.html"
+  status = 200
+[[redirects]]
+  from = "/screen"
+  to = "/screen.html"
+  status = 200
+[[redirects]]
+  from = "/view"
+  to = "/view.html"
+  status = 200
+[[redirects]]
+  from = "/obs"
+  to = "/obs.html"
+  status = 200
+
+# Y al reves: quien llegue con .html acaba en la forma corta.
+[[redirects]]
+  from = "/index.html"
+  to = "/"
+  status = 301
+[[redirects]]
+  from = "/:page.html"
+  to = "/:page"
+  status = 301
 
 # getUserMedia exige HTTPS (Netlify ya lo da) y permiso explicito de camara/micro.
 [[headers]]

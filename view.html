@@ -35,6 +35,13 @@
     font: 600 30px/1 "Cascadia Mono", Consolas, ui-monospace, monospace;
     letter-spacing: .18em; color: var(--screen);
   }
+  /* La resolucion nativa: es el dato que hay que copiar en el monitor virtual. */
+  #native {
+    margin-top: 26px;
+    font: 11.5px/1.7 "Cascadia Mono", Consolas, ui-monospace, monospace;
+    color: #989ca4;
+  }
+  #native b { color: #c3c6cc; font-weight: 600; }
 
   /* Barra que se autooculta: en una tablet montada estorba. */
   #bar {
@@ -74,6 +81,7 @@
   <div>
     <div id="msg">Esperando la pantalla de la PC</div>
     <code id="room"></code>
+    <div id="native"></div>
   </div>
 </div>
 
@@ -92,6 +100,15 @@
 
   // La tablet hace de monitor: no debe apagarse la pantalla.
   createWakeLock().request();
+
+  // Resolucion real en pixeles: es lo que hay que poner en el monitor virtual
+  // de Windows para que la imagen llegue nitida y sin escalar.
+  const dpr = window.devicePixelRatio || 1;
+  const w = Math.round(screen.width * dpr);
+  const h = Math.round(screen.height * dpr);
+  document.getElementById('native').innerHTML =
+    `esta tablet: <b>${w} x ${h}</b> px<br>` +
+    'ponle esa resolucion al monitor virtual';
 
   if (!roomId) {
     msg.textContent = 'Falta el codigo de sala en la URL (?room=ABC123)';

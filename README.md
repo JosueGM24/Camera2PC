@@ -12,14 +12,18 @@ Por Wi-Fi o **por cable USB**.
 
 ## Páginas
 
-| Página | Dónde se abre | Para qué |
+Las URLs van **sin extensión** (`/pc`, no `/pc.html`): el QR sale más simple y la dirección
+que pegas en OBS es más corta. Los archivos siguen siendo `.html` en disco; lo resuelven
+`netlify.toml` y el servidor local.
+
+| URL | Dónde se abre | Para qué |
 |---|---|---|
-| `index.html` | cualquiera | Elegir rol (detecta si estás en móvil o PC) |
-| `pc.html` | PC | **Recibe la cámara**: código de sala, QR, stats, foto, grabación, URL para OBS |
-| `phone.html` | teléfono | **Envía la cámara**: elegir cámara, resolución, linterna |
-| `obs.html` | PC (dentro de OBS) | Receptor "limpio" para el Browser Source |
-| `screen.html` | PC | **Envía la pantalla** a la tablet (segundo monitor) |
-| `view.html` | tablet | **Recibe la pantalla**, sin recortar, sin apagarse |
+| `/` | cualquiera | Elegir rol (detecta si estás en móvil o PC) |
+| `/pc` | PC | **Recibe la cámara**: código, QR, stats, foto, grabación, y la guía de OBS |
+| `/phone` | teléfono | **Envía la cámara**: escáner de QR, cámara, resolución, linterna |
+| `/obs` | PC (dentro de OBS) | Receptor "limpio" para el Browser Source |
+| `/screen` | PC | **Envía la pantalla** a la tablet (segundo monitor) |
+| `/view` | tablet | **Recibe la pantalla**, sin recortar, sin apagarse |
 
 Los dos flujos (`cam` y `screen`) comparten el mismo código de sala y conviven sin
 estorbarse: puedes tener la cámara del teléfono en la PC y la pantalla de la PC en la
@@ -32,6 +36,28 @@ tablet a la vez.
 El truco no es el USB en sí, sino conseguir un **enlace IP por el cable**. El anclaje
 por USB hace exactamente eso: PC y teléfono quedan en la misma subred y WebRTC elige esa
 ruta él solo. Menos latencia, sin saturar el Wi-Fi, y el teléfono se carga.
+
+### Por qué hace falta el anclaje, y no basta el cable
+
+El USB no transporta video por sí solo: los dispositivos **declaran una clase**, y un
+teléfono declara almacenamiento (MTP), depuración (ADB) o red (RNDIS al anclar). No
+declara *USB Video Class*, que es lo que haría que Windows lo viera como webcam. Así que
+no hay ningún flujo de video que leer al otro lado del cable.
+
+El navegador tampoco puede saltárselo: **WebUSB bloquea a propósito las clases
+protegidas** (video, audio, HID, almacenamiento), precisamente para que una pestaña no
+pueda reclamar tu webcam.
+
+El anclaje resuelve esto sin trucos: hace que el cable transporte **paquetes IP**. A
+WebRTC le da igual el medio físico, sólo necesita alcanzabilidad por IP — por eso el video
+acaba yendo por el cable sin que el código sepa que hay un cable.
+
+**¿Y sin anclaje?** Se puede con ADB, que mueve TCP por el cable: así funcionan `scrcpy`
+y el modo USB de DroidCam. Pero necesitan un proceso nativo en la PC que decodifique
+H.264 y alimente una cámara virtual; un navegador no abre sockets TCP crudos. La variante
+web (`adb reverse` + WebSocket + `MediaRecorder`) funcionaría, pero con bastante más
+latencia que WebRTC porque `MediaRecorder` trabaja por bloques. No compensa cambiar un
+interruptor de anclaje por medio segundo de retraso.
 
 ### Camino simple (Android e iOS, cero instalación)
 
@@ -80,40 +106,37 @@ que el frontend no cambia una sola línea entre los dos modos.
 
 ## Segundo monitor
 
-`screen.html` captura la pantalla de la PC con `getDisplayMedia()` y la envía a la tablet.
-Puedes elegir un monitor completo, una ventana suelta o una pestaña.
+Una página web no puede registrar una pantalla en Windows — eso pide un driver IddCx,
+igual que la cámara pide uno. Mismo patrón que OBS: un driver ya hecho aporta lo que el
+navegador no puede, y nosotros ponemos el transporte.
 
-Opciones: prioridad **texto nítido** (`contentHint = 'text'` +
-`maintain-resolution`, para leer código o documentos) o **movimiento fluido**; bitrate
-hasta 12 Mbps; 15/30/60 fps; y audio del sistema opcional.
+1. Instala [Virtual Display Driver](https://github.com/itsmikethetech/Virtual-Display-Driver)
+   (gratuito, código abierto), siguiendo las instrucciones de esa página: el
+   procedimiento cambia entre versiones.
+2. Windows → **Configuración → Pantalla**: aparece un monitor nuevo. Elige
+   **Extender estas pantallas**.
+3. Ponle **la resolución de tu tablet**. `view.html` te la dice: la escribe en la
+   pantalla de espera, ya multiplicada por el `devicePixelRatio`.
+4. Arrastra ahí las ventanas que quieras.
+5. En `screen.html`, al compartir elige **ese** monitor.
+
+`/screen` tiene la guía paso a paso en pantalla, visible hasta que la marcas como hecha.
+
+**A favor:** no instalas nada en la tablet, sólo el navegador, y viaja por el mismo enlace
+USB. **En contra:** sin táctil — tocar la tablet no controla Windows — y ~100-300 ms de
+latencia, que va bien para documentación, chat, dashboards o monitoreo, pero no para
+dibujar ni jugar.
+
+### El modo espejo sigue estando
+
+Sin driver, `screen.html` manda **una ventana suelta o una pestaña** a la tablet, que es
+útil por sí mismo: dejar la documentación o el chat de la reunión en la tablet sin tocar
+el escritorio. Opciones: prioridad **texto nítido** (`contentHint = 'text'` +
+`maintain-resolution`) o **movimiento fluido**; bitrate hasta 12 Mbps; 15/30/60 fps; y
+audio del sistema opcional.
 
 En la tablet, `view.html` va a pantalla completa, no recorta la imagen, mantiene la
-pantalla encendida con Wake Lock y esconde su barra de botones a los 3 segundos.
-
-### El límite, sin rodeos
-
-Esto es un **monitor espejo**, no un escritorio extendido. Windows no ve la tablet como
-pantalla, así que **no puedes arrastrar ventanas ahí**. Tampoco hay entrada: tocar la
-tablet no controla la PC. Con 100-300 ms de latencia sirve muy bien para documentación,
-chat, dashboards o monitoreo; no para dibujar ni jugar.
-
-### Cómo convertirlo en monitor extendido de verdad
-
-Mismo patrón que la cámara virtual con OBS: un driver ya hecho aporta lo que el navegador
-no puede, y nosotros ponemos el transporte.
-
-1. Instala un **driver de pantalla virtual** (IddCx). El más usado es
-   [Virtual Display Driver](https://github.com/itsmikethetech/Virtual-Display-Driver),
-   gratuito y de código abierto.
-2. Windows te muestra un monitor extra real en Configuración → Pantalla. Ya puedes
-   arrastrar ventanas ahí y ajustar su resolución a la de tu tablet.
-3. En `screen.html`, al compartir elige **ese** monitor.
-4. La tablet muestra un escritorio extendido auténtico.
-
-Sigue sin haber entrada táctil de vuelta. Si lo que quieres es exactamente eso —
-escritorio extendido con touch — la herramienta hecha para ello es **spacedesk**
-(gratuita, driver en Windows + app en la tablet). Nuestra ventaja es que no instalas nada
-en la tablet y funciona en iPad y Android igual.
+pantalla encendida con Wake Lock y esconde su barra a los 3 segundos.
 
 ---
 
@@ -193,20 +216,39 @@ Wi-Fi necesitas un túnel HTTPS: `npx localtunnel --port 8888`.
 
 ## Uso de la cámara
 
-1. En la PC abre `pc.html`. Aparece un código de sala y un QR.
-2. Escanea el QR con el teléfono → **Transmitir** → acepta el permiso de cámara.
+1. En la PC abre `/pc`. Aparece un código de sala y un QR.
+2. En el teléfono, abre `/phone` y pulsa el botón de **escanear** junto al código: la app
+   lee el QR ella misma y arranca la transmisión. No hace falta una app de códigos.
 3. El video aparece en 2-4 segundos (se espera a que ICE termine de reunir).
 
-### Como cámara web en Teams / Zoom / Meet
+El escáner usa `BarcodeDetector`, que es nativo del navegador — sin librerías ni
+descargas, así que también funciona en el modo cable sin internet. Safari no lo trae; ahí
+se escribe el código a mano, que son seis caracteres sin letras ambiguas (no hay `I`,
+`L`, `O`, `0` ni `1`).
 
-1. En `pc.html`, copia la **URL para OBS**.
-2. OBS Studio → **Fuentes → + → Navegador** → pega la URL, ancho `1920`, alto `1080`,
-   FPS `30`. Marca *Controlar audio mediante OBS* si quieres el micrófono del teléfono.
-3. Click derecho en la fuente → **Cambiar a pantalla completa**.
-4. **Iniciar cámara virtual** (panel de Controles).
-5. En Teams / Zoom / Meet elige **OBS Virtual Camera**.
+### Como cámara en Zoom, Google Meet o Teams
 
-La URL de OBS no cambia: el código de sala se guarda en `localStorage`.
+La guía completa está dentro de `pc.html`, visible hasta que la marcas como hecha (se
+recuerda en `localStorage`). Resumen:
+
+1. Instala [OBS Studio](https://obsproject.com/download).
+2. OBS → **Ajustes → Video**: resolución base y de salida en `1920x1080`. Si no, salen
+   barras negras en la reunión.
+3. **Fuentes → + → Navegador**: pega la URL que muestra `pc.html`, ancho `1920`, alto
+   `1080`. Marca *Controlar audio mediante OBS* si quieres también el micrófono.
+4. Click derecho en la fuente → **Cambiar a pantalla completa**.
+5. **Iniciar cámara virtual**.
+6. Elige **OBS Virtual Camera** en tu reunión: Meet → ajustes → vídeo; Zoom → vídeo →
+   cámara; Teams → dispositivos.
+
+Dos cosas que suelen morder:
+
+- Si la reunión ya estaba abierta, **ciérrala y vuelve a entrar**: muchas apps sólo leen
+  la lista de cámaras al arrancar.
+- Deja abiertas la pestaña de `pc.html` y OBS durante toda la reunión.
+
+La URL de OBS no cambia: el código de sala se guarda en `localStorage`, así que configuras
+la fuente una vez y te olvidas.
 
 Parámetros de `obs.html`: `?room=ABC123`, `&fit=contain` (no recortar), `&muted=1`.
 
@@ -255,4 +297,4 @@ En Netlify, las mismas claves en **Site configuration → Environment variables*
 
 Una web app no puede registrar una cámara ni una pantalla en Windows — está en un sandbox.
 Por eso la cámara virtual la da OBS y el monitor extendido un driver IddCx. Alternativas
-ya empaquetadas: **cámara** → Camo, Iriun, DroidCam. **Monitor** → spacedesk, Duet, Luna.
+ya empaquetadas, si algún día quieres comparar: **cámara** → Camo, Iriun, DroidCam.

@@ -28,7 +28,7 @@ const roomId =
   randomRoomCode();
 localStorage.setItem(STORE_KEY, roomId);
 
-const viewUrl = absoluteUrl('view.html', { room: roomId });
+const viewUrl = absoluteUrl('/view', { room: roomId });
 $('code').textContent = roomId;
 $('viewUrl').value = viewUrl;
 
@@ -147,6 +147,17 @@ $('btnCopy').onclick = async () => {
   try { await navigator.clipboard.writeText(viewUrl); } catch { document.execCommand('copy'); }
   flashConfirm($('btnCopy'));
 };
+
+// --- configuracion del monitor virtual: prominente hasta que este hecha -----
+const SETUP_KEY = 'camera2pc.displayReady';
+const setup = $('setup');
+const markSetup = (done) => {
+  setup.dataset.done = done ? '1' : '0';
+  try { localStorage.setItem(SETUP_KEY, done ? '1' : '0'); } catch { /* modo privado */ }
+};
+markSetup(localStorage.getItem(SETUP_KEY) === '1');
+$('btnSetupDone').onclick = () => markSetup(true);
+$('btnSetupAgain').onclick = () => markSetup(false);
 
 window.addEventListener('pagehide', () => {
   if (sender) clearRoomOnUnload(roomId, KIND_SCREEN);
