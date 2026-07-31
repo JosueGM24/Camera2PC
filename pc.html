@@ -3,76 +3,100 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Receptor - Camera2PC</title>
+<title>Recibir camara — Camera2PC</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/app.css">
 </head>
-<body>
+<body data-flow="cam">
 <div class="wrap">
-  <header class="top">
-    <h1>Receptor (PC)</h1>
-    <span class="sub"><a href="index.html">&larr; inicio</a></span>
+
+  <header class="topbar">
+    <svg class="mark" viewBox="0 0 30 30" aria-hidden="true">
+      <path class="wire" d="M9 15h12"/>
+      <circle class="node-a" cx="6" cy="15" r="4"/>
+      <circle class="node-b" cx="24" cy="15" r="4"/>
+    </svg>
+    <h1>Recibir camara</h1>
+    <span class="spacer"></span>
+    <a class="back" href="index.html">Inicio</a>
   </header>
 
   <div id="fatal" hidden></div>
 
-  <div class="grid split">
+  <div class="cols">
     <div>
       <div class="stage" id="stage">
         <video id="video" autoplay playsinline muted></video>
-        <div class="hint">
-          <div>Escanea el QR con el telefono para empezar</div>
+        <div class="waiting-for">
+          <div>Escanea el codigo con el telefono para empezar</div>
+        </div>
+        <div class="stage-tools">
+          <button class="icon-btn" id="btnFull" title="Pantalla completa" aria-label="Pantalla completa">
+            <svg data-icon="expand"></svg></button>
+          <button class="icon-btn" id="btnSnap" title="Guardar foto" aria-label="Guardar foto" disabled>
+            <svg data-icon="photo"></svg></button>
+          <button class="icon-btn" id="btnRec" title="Grabar video" aria-label="Grabar video"
+                  aria-pressed="false" disabled>
+            <svg data-icon="record"></svg></button>
+          <button class="icon-btn" id="btnAudio" title="Activar audio" aria-label="Activar audio" disabled>
+            <svg data-icon="mute"></svg></button>
         </div>
       </div>
 
-      <div class="card" style="margin-top:18px">
-        <h2>Estado</h2>
-        <div class="status"><span class="dot" id="dot"></span><span id="statusText">Iniciando...</span></div>
-        <div class="meta" id="stats" style="margin-top:10px">&mdash;</div>
-        <div class="meta" id="route"></div>
-        <div class="row" style="margin-top:14px">
-          <button id="btnFull">Pantalla completa</button>
-          <button id="btnSnap" disabled>Capturar foto</button>
-          <button id="btnRec" disabled>Grabar</button>
-          <button id="btnAudio" disabled>Activar audio</button>
+      <div class="panel" style="margin-top:16px">
+        <h2>Senal</h2>
+        <div class="readout">
+          <span class="dot" id="dot"></span>
+          <span class="txt" id="statusText">Iniciando</span>
         </div>
+        <div id="link" style="margin-top:14px"></div>
+        <div class="data" id="stats" style="margin-top:12px"></div>
+        <div class="data" id="route"></div>
       </div>
     </div>
 
     <div>
-      <div class="card">
+      <div class="panel">
         <h2>Codigo de sala</h2>
-        <div class="code" id="code">------</div>
-        <div class="qr" id="qrBox" style="margin-top:14px"><canvas id="qr"></canvas></div>
-        <div class="linkbox">
-          <input type="text" id="phoneUrl" readonly>
-          <button id="btnCopyPhone">Copiar</button>
+        <p class="roomcode" id="code">------</p>
+        <p class="roomcode-hint">Escribelo en el telefono, o escanea el codigo.</p>
+        <div class="qr" id="qrBox"><canvas id="qr"></canvas></div>
+        <div class="copybar">
+          <input type="text" id="phoneUrl" readonly aria-label="Direccion para el telefono">
+          <button id="btnCopyPhone" title="Copiar" aria-label="Copiar direccion">
+            <svg data-icon="copy" style="width:15px;height:15px"></svg></button>
         </div>
         <div class="row" style="margin-top:14px">
+          <button id="btnReset" class="stop">Reiniciar</button>
           <button id="btnNew">Codigo nuevo</button>
-          <button id="btnReset" class="danger">Reiniciar sesion</button>
         </div>
-        <p style="color:var(--ink-dim);font-size:12.5px;margin:14px 0 0">
-          El codigo se guarda en este navegador, asi la URL de OBS no cambia entre
-          reinicios. Usa <b>Codigo nuevo</b> solo si quieres invalidar el anterior.
+        <p class="note">
+          El codigo se guarda en este navegador, asi la direccion de OBS no cambia.
+          Usa <b>codigo nuevo</b> solo si quieres invalidar el anterior.
         </p>
       </div>
 
-      <div class="card">
-        <h2>URL para OBS (camara virtual)</h2>
-        <div class="linkbox" style="margin-top:0">
-          <input type="text" id="obsUrl" readonly>
-          <button id="btnCopyObs">Copiar</button>
+      <details class="fold" id="fold-obs" style="margin-top:16px">
+        <summary><svg data-icon="camera"></svg> Usarla en Teams o Zoom</summary>
+        <div class="fold-body">
+          <div class="copybar" style="margin-top:0">
+            <input type="text" id="obsUrl" readonly aria-label="Direccion para OBS">
+            <button id="btnCopyObs" title="Copiar" aria-label="Copiar direccion para OBS">
+              <svg data-icon="copy" style="width:15px;height:15px"></svg></button>
+          </div>
+          <ol class="steps" style="margin-top:16px">
+            <li>OBS &rarr; <b>Fuentes &rarr; + &rarr; Navegador</b>, pega la direccion.</li>
+            <li>Ancho <code>1920</code>, alto <code>1080</code>, FPS <code>30</code>.</li>
+            <li>Marca <i>Controlar audio mediante OBS</i> si quieres el microfono.</li>
+            <li>Clic derecho en la fuente &rarr; <b>Cambiar a pantalla completa</b>.</li>
+            <li>Pulsa <b>Iniciar camara virtual</b>.</li>
+            <li>En Teams o Zoom, elige <code>OBS Virtual Camera</code>.</li>
+          </ol>
         </div>
-        <ol class="steps" style="margin-top:14px">
-          <li>OBS &rarr; <b>Fuentes &rarr; + &rarr; Navegador</b>, pega esta URL.</li>
-          <li>Ancho <code>1920</code>, alto <code>1080</code>, FPS <code>30</code>.</li>
-          <li>Marca <i>Controlar audio mediante OBS</i> si quieres el micro del telefono.</li>
-          <li>Menu <b>Herramientas</b> (o el boton) &rarr; <b>Iniciar camara virtual</b>.</li>
-          <li>En Teams o Zoom elige <code>OBS Virtual Camera</code>.</li>
-        </ol>
-      </div>
+      </details>
     </div>
   </div>
+
 </div>
 
 <script type="module" src="js/pc.js"></script>

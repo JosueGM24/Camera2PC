@@ -5,68 +5,96 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Emisor - Camera2PC</title>
+<title>Transmitir camara — Camera2PC</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/app.css">
 </head>
-<body>
-<div class="wrap" style="max-width:520px">
-  <header class="top">
-    <h1>Emisor</h1>
-    <span class="sub"><a href="index.html">&larr; inicio</a></span>
+<body data-flow="cam">
+<div class="wrap wrap--narrow">
+
+  <header class="topbar">
+    <svg class="mark" viewBox="0 0 30 30" aria-hidden="true">
+      <path class="wire" d="M9 15h12"/>
+      <circle class="node-a" cx="6" cy="15" r="4"/>
+      <circle class="node-b" cx="24" cy="15" r="4"/>
+    </svg>
+    <h1>Transmitir</h1>
+    <span class="spacer"></span>
+    <a class="back" href="index.html">Inicio</a>
   </header>
 
   <div id="fatal" hidden></div>
 
   <div class="stage" id="stage">
     <video id="preview" autoplay playsinline muted></video>
-    <div class="hint"><div>Vista previa de la camara</div></div>
+    <div class="waiting-for"><div>Vista previa de la camara</div></div>
+    <div class="stage-tools">
+      <button class="icon-btn" id="btnSwitch" title="Cambiar de camara"
+              aria-label="Cambiar de camara" disabled>
+        <svg data-icon="swap"></svg></button>
+      <button class="icon-btn" id="btnTorch" title="Linterna" aria-label="Linterna"
+              aria-pressed="false" hidden disabled>
+        <svg data-icon="torch"></svg></button>
+    </div>
   </div>
 
-  <div class="card" style="margin-top:16px">
-    <div class="status"><span class="dot" id="dot"></span><span id="statusText">Listo</span></div>
-    <div class="meta" id="route" style="margin-top:8px"></div>
-  </div>
-
-  <div class="card">
+  <div class="panel" style="margin-top:16px">
     <label class="field">
-      <span>Codigo de sala (el que muestra la PC)</span>
+      <span class="lbl">Codigo de sala</span>
       <input type="text" id="room" inputmode="latin" autocapitalize="characters"
              autocomplete="off" spellcheck="false" placeholder="ABC123">
     </label>
-
-    <label class="field">
-      <span>Camara</span>
-      <select id="camera"><option value="environment">Trasera</option><option value="user">Frontal</option></select>
-    </label>
-
     <div class="row">
-      <label class="field" style="flex:1 1 45%">
-        <span>Resolucion</span>
-        <select id="resolution">
-          <option value="1920x1080">1080p</option>
-          <option value="1280x720" selected>720p</option>
-          <option value="640x480">480p</option>
-        </select>
-      </label>
-      <label class="field" style="flex:1 1 45%">
-        <span>Prioridad</span>
-        <select id="mode">
-          <option value="motion">Movimiento (fluidez)</option>
-          <option value="detail">Detalle (documentos)</option>
-        </select>
-      </label>
+      <button id="btnStart" class="go" style="flex:2 1 60%">Transmitir</button>
+      <button id="btnStop" class="stop" disabled>Detener</button>
     </div>
-
-    <div class="row">
-      <button id="btnStart" class="primary">Transmitir</button>
-      <button id="btnStop" disabled>Detener</button>
-    </div>
-    <div class="row" style="margin-top:9px">
-      <button id="btnSwitch" disabled>Cambiar camara</button>
-      <button id="btnTorch" disabled hidden>Linterna</button>
-    </div>
-    <p class="meta" id="tip" style="margin-top:12px"></p>
   </div>
+
+  <div class="panel">
+    <h2>Senal</h2>
+    <div class="readout">
+      <span class="dot" id="dot"></span>
+      <span class="txt" id="statusText">Listo</span>
+    </div>
+    <div id="link" style="margin-top:14px"></div>
+    <div class="data" id="route" style="margin-top:12px"></div>
+    <p class="note" id="tip" style="display:none"></p>
+  </div>
+
+  <details class="fold" id="fold-quality" style="margin-top:16px">
+    <summary><svg data-icon="camera"></svg> Camara y calidad</summary>
+    <div class="fold-body">
+      <label class="field">
+        <span class="lbl">Camara</span>
+        <select id="camera">
+          <option value="environment">Trasera</option>
+          <option value="user">Frontal</option>
+        </select>
+      </label>
+      <div class="row">
+        <label class="field" style="flex:1 1 45%">
+          <span class="lbl">Resolucion</span>
+          <select id="resolution">
+            <option value="1920x1080">1080p</option>
+            <option value="1280x720" selected>720p</option>
+            <option value="640x480">480p</option>
+          </select>
+        </label>
+        <label class="field" style="flex:1 1 45%">
+          <span class="lbl">Prioridad</span>
+          <select id="mode">
+            <option value="motion">Fluidez</option>
+            <option value="detail">Detalle</option>
+          </select>
+        </label>
+      </div>
+      <p class="note" style="margin-top:4px">
+        <b>Detalle</b> mantiene la resolucion a costa de fluidez: sirve para leer
+        documentos o codigos de barras.
+      </p>
+    </div>
+  </details>
+
 </div>
 
 <script type="module" src="js/phone.js"></script>

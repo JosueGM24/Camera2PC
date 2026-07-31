@@ -131,7 +131,7 @@ const ALLOWED = [
   /^[\w.-]+\.html$/,          // index.html, pc.html, phone.html, screen.html...
   /^js\/[\w.-]+\.js$/,        // incluye js/env.generated.js
   /^css\/[\w.-]+\.css$/,
-  /^favicon\.ico$/,
+  /^favicon\.(svg|ico)$/,
 ];
 
 async function serveStatic(req, res, url) {

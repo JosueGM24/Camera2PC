@@ -1,5 +1,6 @@
 import { KIND_CAM, clearRoomOnUnload } from './signaling.js';
 import { createSender } from './sender.js';
+import { createLink, paintIcons, rememberFolds } from './ui.js';
 import {
   params, normalizeRoomCode, CONNECTION_LABELS, makeStatus,
   createWakeLock, describeConnection, formatConnection, showFatal,
@@ -8,12 +9,18 @@ import {
 const $ = (id) => document.getElementById(id);
 const STORE_KEY = 'camera2pc.room';
 
+paintIcons();
+rememberFolds();
+
 if (!navigator.mediaDevices?.getUserMedia) {
-  showFatal('Este navegador no permite acceder a la camara. Abre la pagina en Chrome o Safari, no dentro de otra app.');
+  showFatal('Este navegador no da acceso a la camara. Abre la pagina en Chrome o Safari, no dentro de otra app.');
 }
 
 const setStatus = makeStatus($('dot'), $('statusText'));
 const wakeLock = createWakeLock();
+const link = createLink($('link'), {
+  from: 'phone', to: 'pc', fromLabel: 'Este telefono', toLabel: 'PC',
+});
 
 $('room').value =
   normalizeRoomCode(params.get('room')) ||
@@ -28,6 +35,11 @@ let sender = null;
 let roomId = null;
 let facing = 'environment';
 let routeTimer = null;
+
+const tip = (text) => {
+  $('tip').textContent = text ?? '';
+  $('tip').style.display = text ? '' : 'none';
+};
 
 // --- camara -----------------------------------------------------------------
 async function openCamera() {
@@ -64,22 +76,25 @@ const tuning = () => ({
 const onState = (state, message) => {
   const [label, kind] = CONNECTION_LABELS[state] || [state, 'idle'];
   setStatus(message || label, kind);
+  link.setState(state);
 
   if (state === 'connected') {
     wakeLock.request().then((ok) => {
-      $('tip').textContent = ok
-        ? 'Transmitiendo. La pantalla se mantendra encendida.'
-        : 'Transmitiendo. Deja la pantalla encendida y esta pestana al frente.';
+      tip(ok
+        ? 'Transmitiendo. La pantalla se mantiene encendida.'
+        : 'Transmitiendo. Deja la pantalla encendida y esta pestana al frente.');
     });
-    startRouteWatch();
+    watchRoute();
   }
 };
 
-function startRouteWatch() {
+function watchRoute() {
   clearInterval(routeTimer);
   const tick = async () => {
     const info = await describeConnection(sender?.peer).catch(() => null);
-    if (info) $('route').textContent = formatConnection(info);
+    if (!info) return;
+    link.setState('connected', info);
+    $('route').textContent = formatConnection(info);
   };
   tick();
   routeTimer = setInterval(tick, 3000);
@@ -89,19 +104,21 @@ function startRouteWatch() {
 async function start() {
   roomId = normalizeRoomCode($('room').value);
   if (roomId.length < 4) {
-    setStatus('Escribe el codigo que aparece en la PC', 'bad');
+    setStatus('Falta el codigo de la PC', 'bad');
+    $('room').focus();
     return;
   }
   localStorage.setItem(STORE_KEY, roomId);
 
   $('btnStart').disabled = true;
-  setStatus('Abriendo la camara...', 'wait');
+  setStatus('Abriendo la camara', 'wait');
 
   let stream;
   try {
     stream = await openCamera();
   } catch (err) {
-    setStatus(`No se pudo abrir la camara: ${err.name}`, 'bad');
+    setStatus(`La camara no abrio: ${err.name}`, 'bad');
+    tip('Revisa que le diste permiso de camara a esta pagina.');
     $('btnStart').disabled = false;
     return;
   }
@@ -131,7 +148,8 @@ async function stop() {
   $('stage').classList.remove('live');
   wakeLock.release();
   setStatus('Detenido');
-  $('tip').textContent = '';
+  link.setState('closed');
+  tip(null);
   $('route').textContent = '';
   $('btnStart').disabled = false;
   $('btnStop').disabled = true;
@@ -141,7 +159,7 @@ async function stop() {
   $('mode').disabled = false;
 }
 
-/** Cambia de camara sin renegociar: reemplaza la pista en el sender. */
+/** Cambia de camara sin renegociar: reemplaza la pista en el emisor. */
 async function useCamera(nextFacing) {
   const previous = facing;
   facing = nextFacing;
@@ -155,7 +173,7 @@ async function useCamera(nextFacing) {
   } catch (err) {
     facing = previous;
     $('camera').value = facing;
-    setStatus(`No se pudo cambiar de camara: ${err.name}`, 'bad');
+    setStatus(`No pude cambiar de camara: ${err.name}`, 'bad');
   }
   $('btnSwitch').disabled = !sender;
 }
@@ -177,16 +195,17 @@ $('btnTorch').onclick = async () => {
   torchOn = !torchOn;
   try {
     await track.applyConstraints({ advanced: [{ torch: torchOn }] });
-    $('btnTorch').textContent = torchOn ? 'Apagar linterna' : 'Linterna';
+    $('btnTorch').setAttribute('aria-pressed', String(torchOn));
   } catch {
+    torchOn = false;
     $('btnTorch').disabled = true;
   }
 };
 
-// Al cerrar la pestana, libera el flujo de camara para que la PC no vea una
-// oferta muerta. No toca el flujo de pantalla de la misma sala.
+// Al cerrar la pestana libera solo el flujo de camara: no toca la pantalla.
 window.addEventListener('pagehide', () => {
   if (roomId && sender) clearRoomOnUnload(roomId, KIND_CAM);
 });
 
 setStatus('Listo');
+link.setState('new');

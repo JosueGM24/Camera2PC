@@ -3,99 +3,125 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pantalla a la tablet - Camera2PC</title>
+<title>Compartir pantalla — Camera2PC</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/app.css">
 </head>
-<body>
+<body data-flow="screen">
 <div class="wrap">
-  <header class="top">
-    <h1>Pantalla &rarr; tablet</h1>
-    <span class="sub"><a href="index.html">&larr; inicio</a></span>
+
+  <header class="topbar">
+    <svg class="mark" viewBox="0 0 30 30" aria-hidden="true">
+      <path class="wire" d="M9 15h12"/>
+      <circle class="node-a" cx="6" cy="15" r="4"/>
+      <circle class="node-b" cx="24" cy="15" r="4" style="fill:var(--screen)"/>
+    </svg>
+    <h1>Compartir pantalla</h1>
+    <span class="spacer"></span>
+    <a class="back" href="index.html">Inicio</a>
   </header>
 
   <div id="fatal" hidden></div>
 
-  <div class="grid split">
+  <div class="cols">
     <div>
       <div class="stage" id="stage">
         <video id="preview" autoplay playsinline muted></video>
-        <div class="hint"><div>Pulsa <b>Compartir pantalla</b> y elige monitor, ventana o pestana</div></div>
+        <div class="waiting-for">
+          <div>Elige un monitor, una ventana o una pestana</div>
+        </div>
       </div>
 
-      <div class="card" style="margin-top:18px">
-        <h2>Estado</h2>
-        <div class="status"><span class="dot" id="dot"></span><span id="statusText">Listo</span></div>
-        <div class="meta" id="route" style="margin-top:10px"></div>
-        <div class="row" style="margin-top:14px">
-          <button id="btnStart" class="primary">Compartir pantalla</button>
-          <button id="btnStop" disabled>Detener</button>
+      <div class="panel" style="margin-top:16px">
+        <div class="row">
+          <button id="btnStart" class="go" style="flex:2 1 60%">Compartir pantalla</button>
+          <button id="btnStop" class="stop" disabled>Detener</button>
         </div>
+        <div class="readout" style="margin-top:16px">
+          <span class="dot" id="dot"></span>
+          <span class="txt" id="statusText">Listo</span>
+        </div>
+        <div id="link" style="margin-top:14px"></div>
+        <div class="data" id="route" style="margin-top:12px"></div>
       </div>
     </div>
 
     <div>
-      <div class="card">
+      <div class="panel">
         <h2>Codigo de sala</h2>
-        <div class="code" id="code">------</div>
-        <div class="qr" id="qrBox" style="margin-top:14px"><canvas id="qr"></canvas></div>
-        <div class="linkbox">
-          <input type="text" id="viewUrl" readonly>
-          <button id="btnCopy">Copiar</button>
+        <p class="roomcode" id="code">------</p>
+        <p class="roomcode-hint">Escanea el codigo con la tablet.</p>
+        <div class="qr" id="qrBox"><canvas id="qr"></canvas></div>
+        <div class="copybar">
+          <input type="text" id="viewUrl" readonly aria-label="Direccion para la tablet">
+          <button id="btnCopy" title="Copiar" aria-label="Copiar direccion">
+            <svg data-icon="copy" style="width:15px;height:15px"></svg></button>
         </div>
-        <p style="color:var(--ink-dim);font-size:12.5px;margin:14px 0 0">
-          Escanea el QR con la tablet. Es la misma sala que usa la camara: los dos
-          flujos conviven sin estorbarse.
+        <p class="note">
+          Es la misma sala que usa la camara. Los dos flujos conviven sin estorbarse.
         </p>
       </div>
 
-      <div class="card">
-        <h2>Calidad</h2>
-        <label class="field">
-          <span>Prioridad</span>
-          <select id="mode">
-            <option value="text" selected>Texto nitido (documentos, codigo)</option>
-            <option value="motion">Movimiento fluido (video, scroll)</option>
-          </select>
-        </label>
-        <div class="row">
-          <label class="field" style="flex:1 1 45%">
-            <span>Bitrate maximo</span>
-            <select id="bitrate">
-              <option value="12000000">12 Mbps</option>
-              <option value="8000000" selected>8 Mbps</option>
-              <option value="4000000">4 Mbps</option>
-              <option value="2000000">2 Mbps</option>
+      <details class="fold" id="fold-screenq" style="margin-top:16px">
+        <summary><svg data-icon="monitor"></svg> Calidad</summary>
+        <div class="fold-body">
+          <label class="field">
+            <span class="lbl">Prioridad</span>
+            <select id="mode">
+              <option value="text" selected>Texto nitido</option>
+              <option value="motion">Movimiento fluido</option>
             </select>
           </label>
-          <label class="field" style="flex:1 1 45%">
-            <span>FPS</span>
-            <select id="fps">
-              <option value="60">60</option>
-              <option value="30" selected>30</option>
-              <option value="15">15</option>
+          <div class="row">
+            <label class="field" style="flex:1 1 45%">
+              <span class="lbl">Bitrate</span>
+              <select id="bitrate">
+                <option value="12000000">12 Mbps</option>
+                <option value="8000000" selected>8 Mbps</option>
+                <option value="4000000">4 Mbps</option>
+                <option value="2000000">2 Mbps</option>
+              </select>
+            </label>
+            <label class="field" style="flex:1 1 45%">
+              <span class="lbl">FPS</span>
+              <select id="fps">
+                <option value="60">60</option>
+                <option value="30" selected>30</option>
+                <option value="15">15</option>
+              </select>
+            </label>
+          </div>
+          <label class="field">
+            <span class="lbl">Audio del sistema</span>
+            <select id="audio">
+              <option value="no" selected>No enviar</option>
+              <option value="si">Enviar</option>
             </select>
           </label>
+          <p class="note" style="margin-top:4px">
+            <b>Texto nitido</b> mantiene la resolucion a costa de fluidez. El audio del
+            sistema solo funciona compartiendo una pestana o la pantalla completa.
+          </p>
         </div>
-        <label class="field" style="margin-bottom:0">
-          <span>Audio del sistema</span>
-          <select id="audio">
-            <option value="no" selected>No enviar audio</option>
-            <option value="si">Enviar audio (solo pestana o pantalla completa)</option>
-          </select>
-        </label>
-      </div>
+      </details>
 
-      <div class="card">
-        <h2>Ojo con esto</h2>
-        <p style="color:var(--ink-dim);font-size:13px;margin:0">
-          Esto es un <b>monitor espejo</b>: la tablet muestra lo que capturas, pero
-          Windows no la ve como pantalla, asi que no puedes arrastrar ventanas ahi.
-          Para un escritorio extendido de verdad hace falta un driver de pantalla
-          virtual &mdash; esta explicado en el README.
-        </p>
-      </div>
+      <details class="fold" id="fold-limits">
+        <summary><svg data-icon="monitor"></svg> Hasta donde llega</summary>
+        <div class="fold-body">
+          <p>
+            Esto es un <b>monitor espejo</b>: Windows no ve la tablet como pantalla, asi
+            que no puedes arrastrar ventanas ahi ni controlar la PC tocandola.
+          </p>
+          <p>
+            Para un escritorio extendido de verdad, instala un <b>driver de pantalla
+            virtual</b> (Virtual Display Driver, gratuito). Windows te da un monitor
+            extra autentico; aqui eliges ese monitor y la tablet lo muestra.
+          </p>
+        </div>
+      </details>
     </div>
   </div>
+
 </div>
 
 <script type="module" src="js/screen.js"></script>

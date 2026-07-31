@@ -4,99 +4,154 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Camera2PC</title>
+<meta name="description" content="La camara de tu telefono en tu PC y la pantalla de tu PC en tu tablet, por Wi-Fi o por cable USB.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
 <div class="wrap">
-  <header class="top">
+
+  <header class="topbar">
+    <svg class="mark" viewBox="0 0 30 30" aria-hidden="true">
+      <path class="wire" d="M9 15h12"/>
+      <circle class="node-a" cx="6" cy="15" r="4"/>
+      <circle class="node-b" cx="24" cy="15" r="4"/>
+    </svg>
     <h1>Camera2PC</h1>
-    <span class="sub">La camara de tu telefono en la PC, y la pantalla de la PC en tu tablet</span>
+    <span class="spacer"></span>
+    <span class="where" id="where">detectando</span>
   </header>
 
-  <div id="fatal" hidden></div>
-
-  <p style="color:var(--ink-dim);max-width:64ch">
-    El video viaja directo entre los dos dispositivos (WebRTC); el servidor solo
-    pasa el saludo inicial. Por Wi-Fi o <b>por cable USB</b>.
+  <p class="lede">
+    Convierte el telefono y la tablet que ya tienes en periféricos de tu PC.
+    El video viaja directo entre los dos aparatos; el servidor solo los presenta.
   </p>
 
-  <h2 style="font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-dim);margin:26px 0 10px">
-    Camara del telefono &rarr; PC
-  </h2>
-  <div class="choose">
-    <a href="pc.html" id="link-pc">
-      <span class="tag" id="tag-pc" hidden>Estas en una PC</span>
-      <strong>Receptor &mdash; PC</strong>
-      <span>Genera el codigo y el QR, muestra el video y te da la URL para OBS.</span>
-    </a>
-    <a href="phone.html" id="link-phone">
-      <span class="tag" id="tag-phone" hidden>Estas en un movil</span>
-      <strong>Emisor &mdash; telefono / tablet</strong>
-      <span>Elige camara y resolucion, y transmite. Escanea el QR del receptor.</span>
-    </a>
+  <!-- El patchbay: cada extremo es el enlace a su pagina. -->
+  <div class="bay">
+    <section class="route" data-flow="cam">
+      <p class="eyebrow">Camara</p>
+      <div class="route-line">
+        <a class="node" href="phone.html" id="node-phone">
+          <svg class="glyph" viewBox="0 0 46 40" fill="none" stroke="currentColor"
+               stroke-width="1.75" stroke-linecap="round" aria-hidden="true"
+               data-glyph="phone"></svg>
+          <span class="role">Transmitir</span>
+          <span class="device">Telefono</span>
+        </a>
+        <div class="wire-box" id="wire-cam"></div>
+        <a class="node" href="pc.html" id="node-pc">
+          <svg class="glyph" viewBox="0 0 46 40" fill="none" stroke="currentColor"
+               stroke-width="1.75" stroke-linecap="round" aria-hidden="true"
+               data-glyph="pc"></svg>
+          <span class="role">Recibir</span>
+          <span class="device">PC</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="route" data-flow="screen">
+      <p class="eyebrow">Pantalla</p>
+      <div class="route-line">
+        <a class="node" href="screen.html">
+          <svg class="glyph" viewBox="0 0 46 40" fill="none" stroke="currentColor"
+               stroke-width="1.75" stroke-linecap="round" aria-hidden="true"
+               data-glyph="pc"></svg>
+          <span class="role">Compartir</span>
+          <span class="device">PC</span>
+        </a>
+        <div class="wire-box" id="wire-screen"></div>
+        <a class="node" href="view.html">
+          <svg class="glyph" viewBox="0 0 46 40" fill="none" stroke="currentColor"
+               stroke-width="1.75" stroke-linecap="round" aria-hidden="true"
+               data-glyph="tablet"></svg>
+          <span class="role">Ver</span>
+          <span class="device">Tablet</span>
+        </a>
+      </div>
+    </section>
   </div>
 
-  <h2 style="font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-dim);margin:26px 0 10px">
-    Pantalla de la PC &rarr; tablet (segundo monitor)
-  </h2>
-  <div class="choose">
-    <a href="screen.html">
-      <strong>Compartir pantalla &mdash; PC</strong>
-      <span>Captura un monitor, una ventana o una pestana y la manda a la tablet.</span>
-    </a>
-    <a href="view.html">
-      <strong>Visor &mdash; tablet</strong>
-      <span>Muestra la pantalla a pantalla completa, sin recortar, sin apagarse.</span>
-    </a>
-  </div>
+  <!-- Lo demas, plegado. Se abre solo lo que hace falta. -->
+  <details class="fold" id="fold-cable">
+    <summary><svg data-icon="cable"></svg> Conectar por cable USB</summary>
+    <div class="fold-body">
+      <p>
+        El truco no es el USB en si, sino conseguir un <b>enlace IP por el cable</b>.
+        El anclaje por USB hace exactamente eso y la conexion elige esa ruta sola:
+        menos latencia, sin saturar el Wi-Fi, y el telefono se carga.
+      </p>
+      <ol class="steps">
+        <li>Conecta el cable.</li>
+        <li><b>Android:</b> Ajustes &rarr; Conexiones &rarr; Zona Wi-Fi y anclaje &rarr;
+          <b>Anclaje por USB</b>.<br>
+          <b>iPhone o iPad:</b> Ajustes &rarr; <b>Compartir Internet</b> &rarr; activado.</li>
+        <li>Abre las paginas como siempre.</li>
+        <li>Mira el camino de la senal: si dice <code>cable USB</code>, va por el cable.</li>
+      </ol>
+      <p class="note">
+        Sin internet tambien funciona, con un servidor local y <code>adb</code>:
+        <code>npm run local</code> y <code>npm run usb</code>.
+      </p>
+    </div>
+  </details>
 
-  <div class="card" style="margin-top:26px">
-    <h2>Conectar por cable USB</h2>
-    <p style="color:var(--ink-dim);font-size:13.5px;margin:0 0 12px">
-      El truco no es el USB en si, sino conseguir un <b>enlace IP por el cable</b>.
-      El anclaje por USB hace exactamente eso y WebRTC elige esa ruta solo: menos
-      latencia, sin saturar el Wi-Fi, y el telefono se carga.
-    </p>
-    <ol class="steps">
-      <li>Conecta el cable.</li>
-      <li><b>Android</b>: Ajustes &rarr; Conexiones &rarr; Zona Wi-Fi y anclaje &rarr;
-        <b>Anclaje por USB</b>.<br>
-        <b>iPhone / iPad</b>: Ajustes &rarr; Compartir Internet &rarr; activado
-        (con el cable ya conectado).</li>
-      <li>Abre las paginas como siempre. En el panel de estado veras la ruta elegida;
-        si dice <code>cable USB</code>, el video va por el cable.</li>
-      <li>Apaga el Wi-Fi del telefono si quieres forzarlo.</li>
-    </ol>
-    <p style="color:var(--ink-dim);font-size:12.5px;margin:12px 0 0">
-      Sin internet tambien se puede, con un servidor local y <code>adb</code>:
-      ver <code>npm run local</code> en el README.
-    </p>
-  </div>
+  <details class="fold" id="fold-obs">
+    <summary><svg data-icon="camera"></svg> Usarla como camara web en Teams o Zoom</summary>
+    <div class="fold-body">
+      <ol class="steps">
+        <li>Abre <b>Recibir</b> en la PC y copia la <b>direccion para OBS</b>.</li>
+        <li>En OBS Studio: <b>Fuentes &rarr; + &rarr; Navegador</b>. Pega la direccion,
+          ancho <code>1920</code>, alto <code>1080</code>.</li>
+        <li>Clic derecho en la fuente &rarr; <b>Cambiar a pantalla completa</b>.</li>
+        <li>Pulsa <b>Iniciar camara virtual</b>.</li>
+        <li>En Teams o Zoom, elige la camara <code>OBS Virtual Camera</code>.</li>
+      </ol>
+      <p class="note">
+        El navegador no puede registrar una camara del sistema por si solo. OBS aporta
+        ese driver, ya firmado, asi no instalas nada hecho a mano.
+      </p>
+    </div>
+  </details>
 
-  <div class="card">
-    <h2>Usarlo como camara web en Teams o Zoom</h2>
-    <ol class="steps">
-      <li>En la PC, abre <b>Receptor</b> y copia la <b>URL para OBS</b>.</li>
-      <li>En OBS Studio: <b>Fuentes &rarr; + &rarr; Navegador</b>, pega la URL, pon
-        1920&times;1080 y marca <i>Controlar audio mediante OBS</i> si quieres
-        tambien el microfono del telefono.</li>
-      <li>Boton derecho en la fuente &rarr; <b>Cambiar a pantalla completa</b>.</li>
-      <li><b>Iniciar camara virtual</b> en OBS. En Teams o Zoom elige la camara
-        <code>OBS Virtual Camera</code>.</li>
-    </ol>
-    <p style="color:var(--ink-dim);font-size:13px;margin-bottom:0">
-      El navegador no puede registrar una camara ni una pantalla de sistema por si
-      solo: OBS aporta el driver ya firmado, asi no hay que instalar nada hecho a
-      mano.
-    </p>
-  </div>
+  <details class="fold" id="fold-monitor">
+    <summary><svg data-icon="monitor"></svg> Segundo monitor: hasta donde llega</summary>
+    <div class="fold-body">
+      <p>
+        <b>Compartir</b> manda un monitor, una ventana o una pestana a la tablet. Es un
+        <b>monitor espejo</b>: Windows no ve la tablet como pantalla, asi que no puedes
+        arrastrar ventanas ahi ni controlar la PC tocandola.
+      </p>
+      <p>
+        Para un escritorio extendido de verdad, instala un <b>driver de pantalla
+        virtual</b> (Virtual Display Driver, gratuito). Windows te da un monitor extra
+        autentico; en <b>Compartir</b> eliges ese monitor y la tablet lo muestra. Mismo
+        patron que OBS con la camara.
+      </p>
+    </div>
+  </details>
+
 </div>
 
 <script type="module">
+  import { GLYPHS, wireSvg, paintIcons, rememberFolds } from './js/ui.js';
+
+  // Glifos de dispositivo en los nodos.
+  document.querySelectorAll('svg[data-glyph]').forEach((svg) => {
+    svg.innerHTML = GLYPHS[svg.dataset.glyph] ?? '';
+  });
+
+  document.getElementById('wire-cam').innerHTML = wireSvg();
+  document.getElementById('wire-screen').innerHTML = wireSvg();
+
+  paintIcons();
+  rememberFolds();
+
+  // Marca en que extremo estas y resalta el nodo que te toca.
   const mobile = matchMedia('(pointer: coarse)').matches && matchMedia('(max-width: 900px)').matches;
-  const target = mobile ? 'phone' : 'pc';
-  document.getElementById(`tag-${target}`).hidden = false;
-  document.getElementById(`link-${target}`).classList.add('suggested');
+  document.getElementById('where').textContent = mobile ? 'estas en un movil' : 'estas en una PC';
+  const mine = document.getElementById(mobile ? 'node-phone' : 'node-pc');
+  mine.style.borderColor = 'var(--signal)';
 </script>
 </body>
 </html>

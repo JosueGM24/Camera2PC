@@ -117,6 +117,32 @@ en la tablet y funciona en iPad y Android igual.
 
 ---
 
+## Identidad visual
+
+La interfaz se comporta como el frontal de un equipo de rack, porque lo que hace la app
+es **enrutar una señal entre dos extremos**.
+
+**La firma es el camino de señal** (`js/ui.js` → `createLink`). No es un adorno: codifica
+cosas verdaderas. El color dice de qué flujo se trata; las rayas viajan sólo cuando hay
+video pasando; si la ruta va por un TURN el camino **se dobla** por un tercer nodo; si va
+por cable, se rotula. En `index.html` el mismo componente es la navegación — los nodos
+son los enlaces, y por eso no hay rejilla de tarjetas.
+
+| Decisión | Por qué |
+|---|---|
+| Grafito cálido (`--ink-900` … `--ink-100`) | Chapa de equipo, no negro. Coherente con `obs.html` y `view.html`, que deben ser negros. |
+| **Dos** colores de señal: `--cam` ámbar, `--screen` verde-azulado | La app tiene exactamente dos flujos. El color es estructura. `[data-flow]` en `<body>` los conmuta. |
+| "Esperando" se dice con movimiento, no con color | Evita un tercer color compitiendo. El punto de estado respira. |
+| `--alert` sólo para errores | Un color reservado para una sola cosa. |
+| Display en DIN: Bahnschrift (Windows), DIN Alternate (iOS) | Letra de rotulación industrial, y **ya instalada**: el modo cable sin internet no puede depender de un CDN de fuentes. |
+| Datos en Cascadia Mono / Consolas | La app muestra telemetría real (RTT, resoluciones, kbps). La monoespaciada es estructural. |
+| `<details class="fold">` para todo lo secundario | La causa de que se viera abrumador era la densidad, no el color. Cada página tiene **una** acción primaria; el resto se despliega. Lo que abres se recuerda. |
+| Iconos SVG en línea (`paintIcons`) | Sin peticiones externas y heredan `currentColor`. |
+
+Piso de calidad: `:focus-visible` en todo lo enfocable, `aria-label` en cada botón de sólo
+icono, `prefers-reduced-motion` respetado, y el patchbay se reordena en vertical por
+debajo de 620 px.
+
 ## Cómo funciona la señalización
 
 WebRTC conecta los dispositivos directamente, pero antes tienen que intercambiar sus

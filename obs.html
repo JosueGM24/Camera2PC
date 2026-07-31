@@ -3,8 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Camera2PC - fuente OBS</title>
+<title>Camera2PC — fuente OBS</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>
+  /* Pagina para el Browser Source de OBS: negro real y cero adornos, porque
+     todo lo que se dibuje aqui acaba en la camara virtual. */
   html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
   video {
     position: fixed; inset: 0;
@@ -15,21 +18,27 @@
   #overlay {
     position: fixed; inset: 0;
     display: grid; place-content: center;
-    font: 500 20px/1.5 system-ui, sans-serif;
-    color: #7d8b9c; text-align: center;
+    text-align: center;
     background: #000;
     transition: opacity .3s;
+    font-family: "Bahnschrift SemiCondensed", "Bahnschrift", "DIN Alternate",
+                 "Roboto Condensed", "Segoe UI", system-ui, sans-serif;
   }
   #overlay.gone { opacity: 0; pointer-events: none; }
-  #overlay code { font-size: 26px; letter-spacing: .16em; color: #cfe0f2; }
+  #msg { font-size: 19px; letter-spacing: .1em; text-transform: uppercase; color: #989ca4; }
+  #overlay code {
+    display: block; margin-top: 14px;
+    font: 600 30px/1 "Cascadia Mono", Consolas, ui-monospace, monospace;
+    letter-spacing: .18em; color: #e8a33d;
+  }
 </style>
 </head>
 <body>
 <video id="video" autoplay playsinline></video>
 <div id="overlay">
   <div>
-    <div id="msg">Esperando al telefono...</div>
-    <div style="margin-top:10px"><code id="room"></code></div>
+    <div id="msg">Esperando al telefono</div>
+    <code id="room"></code>
   </div>
 </div>
 

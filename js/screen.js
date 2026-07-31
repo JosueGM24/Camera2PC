@@ -5,6 +5,7 @@
 
 import { KIND_SCREEN, clearRoomOnUnload } from './signaling.js';
 import { createSender } from './sender.js';
+import { createLink, paintIcons, rememberFolds, flashConfirm } from './ui.js';
 import {
   params, randomRoomCode, normalizeRoomCode, absoluteUrl,
   CONNECTION_LABELS, makeStatus, describeConnection, formatConnection, showFatal,
@@ -12,6 +13,9 @@ import {
 
 const $ = (id) => document.getElementById(id);
 const STORE_KEY = 'camera2pc.room';
+
+paintIcons();
+rememberFolds();
 
 if (!navigator.mediaDevices?.getDisplayMedia) {
   showFatal('Este navegador no puede capturar la pantalla. Usa Chrome, Edge o Firefox de escritorio.');
@@ -32,9 +36,9 @@ $('viewUrl').value = viewUrl;
   const script = document.createElement('script');
   script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
   script.onload = () => {
-    window.QRCode.toCanvas($('qr'), viewUrl, { width: 380, margin: 0 }, (err) => {
-      if (err) $('qrBox').hidden = true;
-    });
+    window.QRCode.toCanvas($('qr'), viewUrl,
+      { width: 360, margin: 0, color: { dark: '#1e1f23', light: '#ffffff' } },
+      (err) => { if (err) $('qrBox').hidden = true; });
   };
   script.onerror = () => { $('qrBox').hidden = true; };
   document.head.appendChild(script);
@@ -42,12 +46,16 @@ $('viewUrl').value = viewUrl;
 
 // --- estado -----------------------------------------------------------------
 const setStatus = makeStatus($('dot'), $('statusText'));
+const link = createLink($('link'), {
+  from: 'pc', to: 'tablet', fromLabel: 'Esta PC', toLabel: 'Tablet',
+});
 let sender = null;
 let routeTimer = null;
 
 const onState = (state, message) => {
   const [label, kind] = CONNECTION_LABELS[state] || [state, 'idle'];
   setStatus(message || label, kind);
+  link.setState(state);
   if (state === 'connected') startRouteWatch();
 };
 
@@ -55,7 +63,9 @@ function startRouteWatch() {
   clearInterval(routeTimer);
   const tick = async () => {
     const info = await describeConnection(sender?.peer).catch(() => null);
-    if (info) $('route').textContent = formatConnection(info);
+    if (!info) return;
+    link.setState('connected', info);
+    $('route').textContent = formatConnection(info);
   };
   tick();
   routeTimer = setInterval(tick, 3000);
@@ -120,6 +130,7 @@ async function stop() {
   $('stage').classList.remove('live');
   $('route').textContent = '';
   setStatus('Detenido');
+  link.setState('closed');
   $('btnStart').disabled = false;
   $('btnStop').disabled = true;
   $('mode').disabled = false;
@@ -134,8 +145,7 @@ $('btnStop').onclick = () => stop();
 $('btnCopy').onclick = async () => {
   $('viewUrl').select();
   try { await navigator.clipboard.writeText(viewUrl); } catch { document.execCommand('copy'); }
-  $('btnCopy').textContent = 'Copiado';
-  setTimeout(() => { $('btnCopy').textContent = 'Copiar'; }, 1400);
+  flashConfirm($('btnCopy'));
 };
 
 window.addEventListener('pagehide', () => {
