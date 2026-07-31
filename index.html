@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Camera2PC</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Camera2PC</h1>
+    <span class="sub">La camara de tu telefono o tablet, en tu PC</span>
+  </header>
+
+  <div id="fatal" hidden></div>
+
+  <p style="color:var(--ink-dim);max-width:62ch">
+    Abre <b>Receptor</b> en la PC y <b>Emisor</b> en el telefono. El video viaja
+    directo entre los dos dispositivos (WebRTC); el servidor solo pasa el saludo
+    inicial.
+  </p>
+
+  <div class="choose">
+    <a href="pc.html" id="link-pc">
+      <span class="tag" id="tag-pc" hidden>Estas en una PC</span>
+      <strong>Receptor &mdash; PC</strong>
+      <span>Genera el codigo de sala y el QR, muestra el video y te da la URL para OBS.</span>
+    </a>
+    <a href="phone.html" id="link-phone">
+      <span class="tag" id="tag-phone" hidden>Estas en un movil</span>
+      <strong>Emisor &mdash; telefono / tablet</strong>
+      <span>Elige camara y resolucion, y transmite. Escanea el QR del receptor para entrar directo.</span>
+    </a>
+  </div>
+
+  <div class="card" style="margin-top:22px">
+    <h2>Usarlo como camara web en Teams o Zoom</h2>
+    <ol class="steps">
+      <li>En la PC, abre <b>Receptor</b> y copia la <b>URL para OBS</b>.</li>
+      <li>En OBS Studio: <b>Fuentes &rarr; +
+        &rarr; Navegador</b>, pega la URL, pon 1920&times;1080 y marca
+        <i>Controlar audio mediante OBS</i> si quieres tambien el microfono del telefono.</li>
+      <li>Boton derecho en la fuente &rarr; <b>Cambiar a pantalla completa</b> (o ajusta la escena).</li>
+      <li><b>Iniciar camara virtual</b> en OBS. En Teams o Zoom elige la camara
+        <code>OBS Virtual Camera</code>.</li>
+    </ol>
+    <p style="color:var(--ink-dim);font-size:13px;margin-bottom:0">
+      El navegador no puede registrar una camara de sistema por si solo: OBS aporta
+      el driver ya firmado, asi no hay que instalar nada hecho a mano.
+    </p>
+  </div>
+</div>
+
+<script type="module">
+  const mobile = matchMedia('(pointer: coarse)').matches && matchMedia('(max-width: 900px)').matches;
+  const target = mobile ? 'phone' : 'pc';
+  document.getElementById(`tag-${target}`).hidden = false;
+  document.getElementById(`link-${target}`).classList.add('suggested');
+</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Receptor - Camera2PC</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Receptor (PC)</h1>
+    <span class="sub"><a href="index.html">&larr; inicio</a></span>
+  </header>
+
+  <div id="fatal" hidden></div>
+
+  <div class="grid split">
+    <div>
+      <div class="stage" id="stage">
+        <video id="video" autoplay playsinline muted></video>
+        <div class="hint">
+          <div>Escanea el QR con el telefono para empezar</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h2>Estado</h2>
+        <div class="status"><span class="dot" id="dot"></span><span id="statusText">Iniciando...</span></div>
+        <div class="meta" id="stats" style="margin-top:10px">&mdash;</div>
+        <div class="row" style="margin-top:14px">
+          <button id="btnFull">Pantalla completa</button>
+          <button id="btnSnap" disabled>Capturar foto</button>
+          <button id="btnRec" disabled>Grabar</button>
+          <button id="btnAudio" disabled>Activar audio</button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>Codigo de sala</h2>
+        <div class="code" id="code">------</div>
+        <div class="qr" id="qrBox" style="margin-top:14px"><canvas id="qr"></canvas></div>
+        <div class="linkbox">
+          <input type="text" id="phoneUrl" readonly>
+          <button id="btnCopyPhone">Copiar</button>
+        </div>
+        <div class="row" style="margin-top:14px">
+          <button id="btnNew">Codigo nuevo</button>
+          <button id="btnReset" class="danger">Reiniciar sesion</button>
+        </div>
+        <p style="color:var(--ink-dim);font-size:12.5px;margin:14px 0 0">
+          El codigo se guarda en este navegador, asi la URL de OBS no cambia entre
+          reinicios. Usa <b>Codigo nuevo</b> solo si quieres invalidar el anterior.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>URL para OBS (camara virtual)</h2>
+        <div class="linkbox" style="margin-top:0">
+          <input type="text" id="obsUrl" readonly>
+          <button id="btnCopyObs">Copiar</button>
+        </div>
+        <ol class="steps" style="margin-top:14px">
+          <li>OBS &rarr; <b>Fuentes &rarr; + &rarr; Navegador</b>, pega esta URL.</li>
+          <li>Ancho <code>1920</code>, alto <code>1080</code>, FPS <code>30</code>.</li>
+          <li>Marca <i>Controlar audio mediante OBS</i> si quieres el micro del telefono.</li>
+          <li>Menu <b>Herramientas</b> (o el boton) &rarr; <b>Iniciar camara virtual</b>.</li>
+          <li>En Teams o Zoom elige <code>OBS Virtual Camera</code>.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="js/pc.js"></script>
+</body>
+</html>

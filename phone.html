@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Emisor - Camera2PC</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div class="wrap" style="max-width:520px">
+  <header class="top">
+    <h1>Emisor</h1>
+    <span class="sub"><a href="index.html">&larr; inicio</a></span>
+  </header>
+
+  <div id="fatal" hidden></div>
+
+  <div class="stage" id="stage">
+    <video id="preview" autoplay playsinline muted></video>
+    <div class="hint"><div>Vista previa de la camara</div></div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="status"><span class="dot" id="dot"></span><span id="statusText">Listo</span></div>
+  </div>
+
+  <div class="card">
+    <label class="field">
+      <span>Codigo de sala (el que muestra la PC)</span>
+      <input type="text" id="room" inputmode="latin" autocapitalize="characters"
+             autocomplete="off" spellcheck="false" placeholder="ABC123">
+    </label>
+
+    <label class="field">
+      <span>Camara</span>
+      <select id="camera"><option value="environment">Trasera</option><option value="user">Frontal</option></select>
+    </label>
+
+    <div class="row">
+      <label class="field" style="flex:1 1 45%">
+        <span>Resolucion</span>
+        <select id="resolution">
+          <option value="1920x1080">1080p</option>
+          <option value="1280x720" selected>720p</option>
+          <option value="640x480">480p</option>
+        </select>
+      </label>
+      <label class="field" style="flex:1 1 45%">
+        <span>Prioridad</span>
+        <select id="mode">
+          <option value="motion">Movimiento (fluidez)</option>
+          <option value="detail">Detalle (documentos)</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="row">
+      <button id="btnStart" class="primary">Transmitir</button>
+      <button id="btnStop" disabled>Detener</button>
+    </div>
+    <div class="row" style="margin-top:9px">
+      <button id="btnSwitch" disabled>Cambiar camara</button>
+      <button id="btnTorch" disabled hidden>Linterna</button>
+    </div>
+    <p class="meta" id="tip" style="margin-top:12px"></p>
+  </div>
+</div>
+
+<script type="module" src="js/phone.js"></script>
+</body>
+</html>

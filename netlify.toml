@@ -1,0 +1,46 @@
+[build]
+  publish = "."
+  # Genera js/env.generated.js (config ICE). No falla si no hay variables.
+  command = "node scripts/build-config.mjs"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# La senalizacion vive en la funcion, expuesta en una ruta corta.
+[[redirects]]
+  from = "/api/signal"
+  to = "/.netlify/functions/signal"
+  status = 200
+  force = true
+
+# getUserMedia exige HTTPS (Netlify ya lo da) y permiso explicito de camara/micro.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Permissions-Policy = "camera=(self), microphone=(self), display-capture=(self)"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Content-Type-Options = "nosniff"
+
+# El HTML siempre fresco: si cambias el codigo de sala no quieres una copia vieja.
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=300"
+
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=300"
+
+# El .env nunca debe llegar al sitio publicado.
+[[redirects]]
+  from = "/.env*"
+  to = "/index.html"
+  status = 404
+  force = true

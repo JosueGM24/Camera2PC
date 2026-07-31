@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Camera2PC - fuente OBS</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  video {
+    position: fixed; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;              /* llena el lienzo de OBS sin barras */
+    background: #000;
+  }
+  #overlay {
+    position: fixed; inset: 0;
+    display: grid; place-content: center;
+    font: 500 20px/1.5 system-ui, sans-serif;
+    color: #7d8b9c; text-align: center;
+    background: #000;
+    transition: opacity .3s;
+  }
+  #overlay.gone { opacity: 0; pointer-events: none; }
+  #overlay code { font-size: 26px; letter-spacing: .16em; color: #cfe0f2; }
+</style>
+</head>
+<body>
+<video id="video" autoplay playsinline></video>
+<div id="overlay">
+  <div>
+    <div id="msg">Esperando al telefono...</div>
+    <div style="margin-top:10px"><code id="room"></code></div>
+  </div>
+</div>
+
+<script type="module">
+  import { startReceiver } from './js/receiver.js';
+  import { params, normalizeRoomCode, CONNECTION_LABELS } from './js/util.js';
+
+  const video = document.getElementById('video');
+  const overlay = document.getElementById('overlay');
+  const msg = document.getElementById('msg');
+
+  const roomId = normalizeRoomCode(params.get('room'))
+    || normalizeRoomCode(localStorage.getItem('camera2pc.room'));
+
+  document.getElementById('room').textContent = roomId || '';
+
+  if (!roomId) {
+    msg.textContent = 'Falta el codigo de sala en la URL (?room=ABC123)';
+  } else {
+    // object-fit: cover recorta; con ?fit=contain se ve el cuadro completo.
+    if (params.get('fit') === 'contain') video.style.objectFit = 'contain';
+    // OBS permite autoplay con audio; en un navegador normal hace falta silenciar.
+    video.muted = params.get('muted') === '1';
+    video.addEventListener('loadedmetadata', () => {
+      video.play().catch(() => { video.muted = true; video.play().catch(() => {}); });
+    });
+
+    startReceiver({
+      roomId,
+      videoEl: video,
+      onState: (state, message) => {
+        const [label] = CONNECTION_LABELS[state] || [state];
+        msg.textContent = message || label;
+        overlay.classList.toggle('gone', state === 'connected');
+      },
+    });
+  }
+</script>
+</body>
+</html>
