@@ -7,9 +7,9 @@
 
 import { rtcConfig } from './config.js';
 import { publish, fetchSignal, createPoller } from './signaling.js';
-import { waitForIceGathering } from './util.js';
+import { waitForIceGathering, describeConnection } from './util.js';
 
-export function startReceiver({ roomId, videoEl, onState = () => {}, onStats = null }) {
+export function startReceiver({ roomId, kind = 'cam', videoEl, onState = () => {}, onStats = null }) {
   let pc = null;
   let session = null;
   let statsTimer = null;
@@ -54,12 +54,12 @@ export function startReceiver({ roomId, videoEl, onState = () => {}, onStats = n
     const answer = await pc.createAnswer();
     await pc.setLocalDescription(answer);
     await waitForIceGathering(pc);
-    await publish(roomId, 'callee', session, pc.localDescription);
+    await publish(roomId, kind, 'callee', session, pc.localDescription);
   };
 
   const poller = createPoller(
     async () => {
-      const signal = await fetchSignal(roomId, 'caller');
+      const signal = await fetchSignal(roomId, kind, 'caller');
       if (!signal?.description) {
         if (!session) onState('new', 'Esperando al telefono...');
         return;
@@ -104,6 +104,8 @@ export function startReceiver({ roomId, videoEl, onState = () => {}, onStats = n
 
   return {
     get peer() { return pc; },
+    /** Par de candidatos ICE elegido: sirve para confirmar si va por cable. */
+    route: () => describeConnection(pc),
     /** Olvida la sesion actual para volver a aceptar la oferta que haya en el buzon. */
     rearm() {
       teardownPeer();

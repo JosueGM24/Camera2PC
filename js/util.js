@@ -20,15 +20,83 @@ export function absoluteUrl(path, query = {}) {
   return url.toString();
 }
 
-/** Etiqueta legible para RTCPeerConnection.connectionState */
+/** Etiqueta legible para RTCPeerConnection.connectionState (mas dos estados propios) */
 export const CONNECTION_LABELS = {
   new: ['Inactivo', 'idle'],
+  gathering: ['Reuniendo rutas de red...', 'wait'],
+  waiting: ['Esperando al otro extremo...', 'wait'],
   connecting: ['Conectando...', 'wait'],
   connected: ['Conectado', 'ok'],
   disconnected: ['Se perdio la senal', 'wait'],
   failed: ['Fallo la conexion', 'bad'],
   closed: ['Cerrado', 'idle'],
 };
+
+// Subredes que asignan los anclajes por USB. Sirve para avisar de que el video
+// va por el cable; es una heuristica, no una certeza.
+const USB_RANGES = [
+  { re: /^192\.168\.42\./, label: 'cable USB (Android)' },
+  { re: /^192\.168\.43\./, label: 'anclaje Android' },
+  { re: /^172\.20\.10\./, label: 'cable USB (iPhone/iPad)' },
+];
+
+/**
+ * Describe por donde esta viajando el video: par de candidatos ICE elegido,
+ * direcciones, tipo de ruta y RTT.
+ *
+ * Nota: los navegadores ofuscan sus propios candidatos host con nombres mDNS
+ * (algo.local) mientras la pagina no tenga permiso de camara/microfono, asi que
+ * en el receptor la direccion local puede salir como .local. La del otro
+ * extremo si suele ser una IP real.
+ */
+export async function describeConnection(pc) {
+  if (!pc) return null;
+  const stats = await pc.getStats();
+
+  const byId = new Map();
+  let selectedId = null;
+  let selectedPair = null;
+
+  stats.forEach((s) => {
+    if (s.type === 'local-candidate' || s.type === 'remote-candidate') byId.set(s.id, s);
+    if (s.type === 'transport' && s.selectedCandidatePairId) selectedId = s.selectedCandidatePairId;
+  });
+
+  stats.forEach((s) => {
+    if (s.type !== 'candidate-pair') return;
+    const isSelected = s.id === selectedId || s.selected === true
+      || (s.nominated && s.state === 'succeeded');
+    if (isSelected && !selectedPair) selectedPair = s;
+  });
+
+  if (!selectedPair) return null;
+
+  const local = byId.get(selectedPair.localCandidateId);
+  const remote = byId.get(selectedPair.remoteCandidateId);
+  const addresses = [local?.address, remote?.address].filter(Boolean);
+  const usb = USB_RANGES.find((r) => addresses.some((a) => r.re.test(a)));
+
+  return {
+    local: local?.address ?? '?',
+    localType: local?.candidateType ?? '?',
+    remote: remote?.address ?? '?',
+    remoteType: remote?.candidateType ?? '?',
+    protocol: local?.protocol ?? '?',
+    rttMs: selectedPair.currentRoundTripTime != null
+      ? Math.round(selectedPair.currentRoundTripTime * 1000)
+      : null,
+    relayed: local?.candidateType === 'relay' || remote?.candidateType === 'relay',
+    linkHint: usb?.label ?? null,
+  };
+}
+
+/** Resumen de una linea para mostrar en la interfaz. */
+export function formatConnection(info) {
+  if (!info) return 'ruta: (aun sin determinar)';
+  const route = info.relayed ? 'via TURN' : info.linkHint ?? 'directo';
+  const rtt = info.rttMs != null ? ` · rtt ${info.rttMs} ms` : '';
+  return `ruta: ${route} · ${info.local} (${info.localType}) <-> ${info.remote} (${info.remoteType}) · ${info.protocol}${rtt}`;
+}
 
 export function makeStatus(dotEl, textEl) {
   return (text, kind = 'idle') => {

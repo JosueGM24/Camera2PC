@@ -1,8 +1,8 @@
-import { rtcConfig } from './config.js';
-import { publish, fetchSignal, clearRoom, clearRoomOnUnload, createPoller } from './signaling.js';
+import { KIND_CAM, clearRoomOnUnload } from './signaling.js';
+import { createSender } from './sender.js';
 import {
   params, normalizeRoomCode, CONNECTION_LABELS, makeStatus,
-  createWakeLock, tuneVideoSender, waitForIceGathering, showFatal,
+  createWakeLock, describeConnection, formatConnection, showFatal,
 } from './util.js';
 
 const $ = (id) => document.getElementById(id);
@@ -24,17 +24,15 @@ $('room').addEventListener('input', (e) => {
 
 const BITRATE = { '1920x1080': 4_000_000, '1280x720': 2_500_000, '640x480': 1_000_000 };
 
-let stream = null;
-let pc = null;
-let session = null;
+let sender = null;
 let roomId = null;
 let facing = 'environment';
-let answerPoller = null;
+let routeTimer = null;
 
 // --- camara -----------------------------------------------------------------
 async function openCamera() {
   const [width, height] = $('resolution').value.split('x').map(Number);
-  const next = await navigator.mediaDevices.getUserMedia({
+  const stream = await navigator.mediaDevices.getUserMedia({
     audio: { echoCancellation: true, noiseSuppression: true },
     video: {
       facingMode: { ideal: facing },
@@ -44,11 +42,9 @@ async function openCamera() {
     },
   });
 
-  const track = next.getVideoTracks()[0];
+  const track = stream.getVideoTracks()[0];
   track.contentHint = $('mode').value === 'detail' ? 'detail' : 'motion';
 
-  stream?.getTracks().forEach((t) => t.stop());
-  stream = next;
   $('preview').srcObject = stream;
   $('stage').classList.add('live');
 
@@ -56,7 +52,37 @@ async function openCamera() {
   $('btnTorch').hidden = !torchable;
   $('btnTorch').disabled = !torchable;
 
-  return track;
+  return stream;
+}
+
+const tuning = () => ({
+  maxBitrate: BITRATE[$('resolution').value] || 2_500_000,
+  degradation: $('mode').value === 'detail' ? 'maintain-resolution' : 'maintain-framerate',
+});
+
+// --- estado -----------------------------------------------------------------
+const onState = (state, message) => {
+  const [label, kind] = CONNECTION_LABELS[state] || [state, 'idle'];
+  setStatus(message || label, kind);
+
+  if (state === 'connected') {
+    wakeLock.request().then((ok) => {
+      $('tip').textContent = ok
+        ? 'Transmitiendo. La pantalla se mantendra encendida.'
+        : 'Transmitiendo. Deja la pantalla encendida y esta pestana al frente.';
+    });
+    startRouteWatch();
+  }
+};
+
+function startRouteWatch() {
+  clearInterval(routeTimer);
+  const tick = async () => {
+    const info = await describeConnection(sender?.peer).catch(() => null);
+    if (info) $('route').textContent = formatConnection(info);
+  };
+  tick();
+  routeTimer = setInterval(tick, 3000);
 }
 
 // --- transmision ------------------------------------------------------------
@@ -71,64 +97,24 @@ async function start() {
   $('btnStart').disabled = true;
   setStatus('Abriendo la camara...', 'wait');
 
+  let stream;
   try {
-    await openCamera();
+    stream = await openCamera();
   } catch (err) {
     setStatus(`No se pudo abrir la camara: ${err.name}`, 'bad');
     $('btnStart').disabled = false;
     return;
   }
 
-  session = crypto.randomUUID();
-  pc = new RTCPeerConnection(rtcConfig);
-  stream.getTracks().forEach((track) => pc.addTrack(track, stream));
-
-  await tuneVideoSender(pc.getSenders().find((s) => s.track?.kind === 'video'), {
-    maxBitrate: BITRATE[$('resolution').value] || 2_500_000,
-    degradation: $('mode').value === 'detail' ? 'maintain-resolution' : 'maintain-framerate',
-  });
-
-  pc.onconnectionstatechange = () => {
-    if (!pc) return;
-    const [label, kind] = CONNECTION_LABELS[pc.connectionState] || [pc.connectionState, 'idle'];
-    setStatus(label, kind);
-    if (pc.connectionState === 'connected') {
-      answerPoller?.pause();
-      wakeLock.request().then((ok) => {
-        $('tip').textContent = ok
-          ? 'Transmitiendo. La pantalla se mantendra encendida.'
-          : 'Transmitiendo. Deja la pantalla encendida y esta pestana al frente.';
-      });
-    }
-  };
-
-  setStatus('Reuniendo rutas de red...', 'wait');
-  const offer = await pc.createOffer();
-  await pc.setLocalDescription(offer);
-  await waitForIceGathering(pc);
+  sender = createSender({ roomId, kind: KIND_CAM, onState });
 
   try {
-    await clearRoom(roomId);                                  // descarta la sesion anterior
-    await publish(roomId, 'caller', session, pc.localDescription);
+    await sender.connect(stream, tuning());
   } catch (err) {
     setStatus(err.message, 'bad');
     await stop();
     return;
   }
-
-  setStatus('Esperando a la PC...', 'wait');
-
-  answerPoller = createPoller(
-    async () => {
-      if (!pc || pc.currentRemoteDescription) return;
-      const signal = await fetchSignal(roomId, 'callee');
-      if (!signal?.description || signal.session !== session) return;
-      await pc.setRemoteDescription(new RTCSessionDescription(signal.description));
-      answerPoller.pause();
-    },
-    { onError: (err) => setStatus(err.message, 'bad') }
-  );
-  answerPoller.start();
 
   $('btnStop').disabled = false;
   $('btnSwitch').disabled = false;
@@ -137,18 +123,16 @@ async function start() {
 }
 
 async function stop() {
-  answerPoller?.stop();
-  answerPoller = null;
-  if (pc) { pc.onconnectionstatechange = null; pc.close(); pc = null; }
-  stream?.getTracks().forEach((t) => t.stop());
-  stream = null;
-  session = null;
+  clearInterval(routeTimer);
+  routeTimer = null;
+  await sender?.stop();
+  sender = null;
   $('preview').srcObject = null;
   $('stage').classList.remove('live');
   wakeLock.release();
-  if (roomId) await clearRoom(roomId).catch(() => {});
   setStatus('Detenido');
   $('tip').textContent = '';
+  $('route').textContent = '';
   $('btnStart').disabled = false;
   $('btnStop').disabled = true;
   $('btnSwitch').disabled = true;
@@ -159,22 +143,26 @@ async function stop() {
 
 /** Cambia de camara sin renegociar: reemplaza la pista en el sender. */
 async function useCamera(nextFacing) {
+  const previous = facing;
   facing = nextFacing;
   $('camera').value = facing;
   $('btnSwitch').disabled = true;
   try {
-    const track = await openCamera();
-    const sender = pc?.getSenders().find((s) => s.track?.kind === 'video');
-    if (sender) await sender.replaceTrack(track);
+    const old = $('preview').srcObject;
+    const stream = await openCamera();
+    await sender?.replaceVideoTrack(stream.getVideoTracks()[0]);
+    old?.getTracks().forEach((t) => t.stop());
   } catch (err) {
+    facing = previous;
+    $('camera').value = facing;
     setStatus(`No se pudo cambiar de camara: ${err.name}`, 'bad');
   }
-  $('btnSwitch').disabled = !pc;
+  $('btnSwitch').disabled = !sender;
 }
 
 // --- eventos ----------------------------------------------------------------
 $('camera').addEventListener('change', (e) => {
-  if (stream) useCamera(e.target.value);
+  if (sender) useCamera(e.target.value);
   else facing = e.target.value;
 });
 
@@ -184,7 +172,7 @@ $('btnSwitch').onclick = () => useCamera(facing === 'environment' ? 'user' : 'en
 
 let torchOn = false;
 $('btnTorch').onclick = async () => {
-  const track = stream?.getVideoTracks()[0];
+  const track = $('preview').srcObject?.getVideoTracks()[0];
   if (!track) return;
   torchOn = !torchOn;
   try {
@@ -195,9 +183,10 @@ $('btnTorch').onclick = async () => {
   }
 };
 
-// Al cerrar la pestana, libera la sala para que la PC no vea una oferta muerta.
+// Al cerrar la pestana, libera el flujo de camara para que la PC no vea una
+// oferta muerta. No toca el flujo de pantalla de la misma sala.
 window.addEventListener('pagehide', () => {
-  if (roomId && pc) clearRoomOnUnload(roomId);
+  if (roomId && sender) clearRoomOnUnload(roomId, KIND_CAM);
 });
 
 setStatus('Listo');

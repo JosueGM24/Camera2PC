@@ -6,12 +6,19 @@
 
 const API = '/api/signal';
 
-export async function publish(room, role, session, description) {
+// kind separa los dos flujos que pueden compartir una sala:
+//   'cam'    telefono -> PC
+//   'screen' PC -> tablet
+export const KIND_CAM = 'cam';
+export const KIND_SCREEN = 'screen';
+
+export async function publish(room, kind, role, session, description) {
   const res = await fetch(API, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
       room,
+      kind,
       role,
       session,
       description: { type: description.type, sdp: description.sdp },
@@ -22,17 +29,17 @@ export async function publish(room, role, session, description) {
 }
 
 /** Devuelve { session, description, at } o null si el otro extremo no publico. */
-export async function fetchSignal(room, role) {
-  const res = await fetch(`${API}?room=${encodeURIComponent(room)}&role=${role}`, {
-    cache: 'no-store',
-  });
+export async function fetchSignal(room, kind, role) {
+  const query = `room=${encodeURIComponent(room)}&kind=${kind}&role=${role}`;
+  const res = await fetch(`${API}?${query}`, { cache: 'no-store' });
   if (res.status === 204) return null;
   if (!res.ok) throw new Error(await describeError(res));
   return res.json();
 }
 
-export async function clearRoom(room) {
-  const res = await fetch(`${API}?room=${encodeURIComponent(room)}`, { method: 'DELETE' });
+/** Sin kind limpia la sala completa; con kind solo ese flujo. */
+export async function clearRoom(room, kind = null) {
+  const res = await fetch(`${API}?${roomQuery(room, kind)}`, { method: 'DELETE' });
   if (!res.ok) throw new Error(await describeError(res));
 }
 
@@ -40,11 +47,14 @@ export async function clearRoom(room) {
  * Version para 'pagehide': `keepalive` deja que la peticion sobreviva al cierre
  * de la pestana. Es best-effort; si falla, el TTL del buzon limpia igual.
  */
-export function clearRoomOnUnload(room) {
+export function clearRoomOnUnload(room, kind = null) {
   try {
-    fetch(`${API}?room=${encodeURIComponent(room)}`, { method: 'DELETE', keepalive: true });
+    fetch(`${API}?${roomQuery(room, kind)}`, { method: 'DELETE', keepalive: true });
   } catch { /* la pagina ya se esta yendo */ }
 }
+
+const roomQuery = (room, kind) =>
+  `room=${encodeURIComponent(room)}${kind ? `&kind=${kind}` : ''}`;
 
 async function describeError(res) {
   let detail = '';

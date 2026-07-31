@@ -2,7 +2,7 @@ import { clearRoom } from './signaling.js';
 import { startReceiver } from './receiver.js';
 import {
   params, randomRoomCode, normalizeRoomCode, absoluteUrl,
-  CONNECTION_LABELS, makeStatus,
+  CONNECTION_LABELS, makeStatus, formatConnection,
 } from './util.js';
 
 const $ = (id) => document.getElementById(id);
@@ -50,8 +50,22 @@ const onState = (state, message) => {
   $('btnSnap').disabled = !live;
   $('btnRec').disabled = !live;
   $('btnAudio').disabled = !live;
-  if (!live) { $('stats').textContent = '—'; lastBytes = 0; }
+  if (!live) { $('stats').textContent = '—'; $('route').textContent = ''; lastBytes = 0; }
+  else startRouteWatch();
 };
+
+// Muestra por donde viaja el video: sirve para confirmar que el anclaje por USB
+// realmente esta llevando el trafico por el cable y no por el Wi-Fi.
+let routeTimer = null;
+function startRouteWatch() {
+  clearInterval(routeTimer);
+  const tick = async () => {
+    const info = await receiver.route().catch(() => null);
+    if (info) $('route').textContent = formatConnection(info);
+  };
+  tick();
+  routeTimer = setInterval(tick, 3000);
+}
 
 const onStats = (s) => {
   const now = performance.now();
