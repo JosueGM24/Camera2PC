@@ -1,0 +1,68 @@
+<!doctype html>
+<!-- Página informativa que publica Netlify. La interfaz real de Toque está en
+     public/ y la sirve server.mjs desde tu propia PC. -->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Toque — teclado y trackpad remotos</title>
+<link rel="icon" href="/public/favicon.svg" type="image/svg+xml">
+<style>
+  :root { --bg:#0a0a0c; --surface:#141417; --edge:#232328; --text:#f5f5f7; --muted:#98989f; --accent:#0a84ff; }
+  @media (prefers-color-scheme: light) {
+    :root { --bg:#e2e2e7; --surface:#f7f7fa; --edge:#d0d0d6; --text:#1d1d1f; --muted:#6e6e73; }
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    line-height: 1.55; min-height: 100vh; display: grid; place-items: center; padding: 48px 24px;
+  }
+  main { max-width: 34rem; width: 100%; }
+  h1 { font-size: clamp(38px, 8vw, 56px); font-weight: 650; letter-spacing: -0.035em; }
+  .lede { color: var(--muted); font-size: 18px; margin-top: 10px; }
+  .note {
+    margin-top: 36px; padding: 18px 20px;
+    background: var(--surface); border: 1px solid var(--edge); border-radius: 14px;
+    font-size: 15px; color: var(--muted);
+  }
+  .note strong { color: var(--text); font-weight: 590; }
+  h2 { font-size: 13px; font-weight: 590; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 36px 0 12px; }
+  pre {
+    background: var(--surface); border: 1px solid var(--edge); border-radius: 14px;
+    padding: 18px 20px; overflow-x: auto;
+    font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 14px; color: var(--text);
+  }
+  ol { padding-left: 1.2em; color: var(--muted); font-size: 15px; }
+  li { margin-top: 8px; }
+  li strong { color: var(--text); font-weight: 500; }
+  footer { margin-top: 44px; font-size: 14px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Toque</h1>
+  <p class="lede">Tu teléfono o tablet como teclado y trackpad de tu PC, por WiFi y desde el navegador.</p>
+
+  <p class="note"><strong>Toque se ejecuta en tu propia computadora.</strong> Necesita mover el cursor y escribir en tu escritorio, así que no hay una versión alojada: descarga el proyecto y córrelo en la PC que quieras controlar.</p>
+
+  <h2>Instalar</h2>
+<pre>git clone https://github.com/JosueGM24/Camera2PC
+cd Camera2PC
+npm install
+npm start</pre>
+
+  <h2>Usar</h2>
+  <ol>
+    <li>Al iniciar se abre una página con un <strong>código QR</strong>.</li>
+    <li><strong>Escanéalo</strong> con la cámara del teléfono, en la misma red WiFi.</li>
+    <li>Arriba tienes el <strong>trackpad</strong>; abajo, el <strong>teclado</strong>.</li>
+  </ol>
+
+  <footer><a href="https://github.com/JosueGM24/Camera2PC">Ver el código en GitHub</a></footer>
+</main>
+</body>
+</html>
