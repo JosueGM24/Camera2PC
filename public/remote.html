@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0c">
+<title>Toque</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="stylesheet" href="/remote.css">
+</head>
+<body>
+  <header class="bar">
+    <span class="brand"><span class="dot" id="dot"></span>Toque</span>
+    <span class="bar-status" id="barStatus">conectando…</span>
+    <button class="kb-toggle" id="kbToggle" aria-label="Mostrar u ocultar teclado">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+        <rect x="2.5" y="6" width="19" height="12" rx="2.5"/>
+        <path d="M6 9.5h.01M9.3 9.5h.01M12.6 9.5h.01M15.9 9.5h.01M6 12.5h.01M9.3 12.5h.01M12.6 12.5h.01M15.9 12.5h.01M18.5 9.5h.01M18.5 12.5h.01M7 15.5h10"/>
+      </svg>
+    </button>
+  </header>
+
+  <main class="pad-zone">
+    <div class="pad" id="pad"></div>
+  </main>
+
+  <section class="keyboard" id="keyboard" aria-label="Teclado"></section>
+
+  <div class="overlay" id="overlay" hidden>
+    <p id="overlayMsg">Sin conexión</p>
+  </div>
+
+<script src="/remote.js"></script>
+</body>
+</html>

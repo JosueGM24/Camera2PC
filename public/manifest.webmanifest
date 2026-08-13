@@ -1,0 +1,12 @@
+{
+  "name": "Toque",
+  "short_name": "Toque",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#0a0a0c",
+  "theme_color": "#0a0a0c",
+  "start_url": "/r",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

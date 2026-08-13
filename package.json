@@ -1,0 +1,14 @@
+{
+  "name": "toque",
+  "version": "1.0.0",
+  "description": "Usa tu teléfono o tablet como teclado y trackpad remotos para tu PC",
+  "type": "module",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4",
+    "ws": "^8.18.0"
+  }
+}

@@ -1,0 +1,223 @@
+/* Toque — interfaz remota. Estilo Magic Keyboard: sobrio, preciso, sin adorno. */
+:root {
+  --bg: #0a0a0c;
+  --surface: #141417;
+  --surface-edge: #232328;
+  --key: #2a2a2e;
+  --key-mod: #202024;
+  --key-edge: rgba(255, 255, 255, 0.06);
+  --key-down: #4a4a50;
+  --text: #f5f5f7;
+  --muted: #98989f;
+  --accent: #0a84ff;
+  --ok: #30d158;
+  --key-radius: 7px;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #e2e2e7;
+    --surface: #d6d6db;
+    --surface-edge: #c4c4ca;
+    --key: #fbfbfd;
+    --key-mod: #eeeef2;
+    --key-edge: rgba(0, 0, 0, 0.12);
+    --key-down: #c8c8ce;
+    --text: #1d1d1f;
+    --muted: #6e6e73;
+  }
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* ---- barra superior ---- */
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px 6px;
+  flex: none;
+}
+.brand {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: background 0.3s;
+}
+.dot.on { background: var(--ok); }
+.bar-status {
+  color: var(--muted);
+  font-size: 13px;
+  flex: 1;
+}
+.kb-toggle {
+  border: 0;
+  background: none;
+  color: var(--muted);
+  padding: 6px;
+  border-radius: 8px;
+}
+.kb-toggle.active { color: var(--accent); }
+
+/* ---- touchpad ---- */
+.pad-zone {
+  flex: 1;
+  min-height: 0;
+  padding: 6px 12px 10px;
+  display: flex;
+}
+.pad {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--surface-edge);
+  border-radius: 18px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+.ripple {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(128, 128, 140, 0.35), rgba(128, 128, 140, 0));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s;
+}
+.ripple.live { opacity: 1; transition: none; }
+.pad.dragging { border-color: var(--accent); }
+
+/* ---- teclado ---- */
+.keyboard {
+  flex: none;
+  padding: 4px 8px calc(10px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  transition: transform 0.28s cubic-bezier(0.3, 0.8, 0.3, 1), opacity 0.2s;
+}
+body.kb-hidden .keyboard {
+  position: absolute;
+  bottom: 0;
+  transform: translateY(105%);
+  opacity: 0;
+  pointer-events: none;
+}
+.krow {
+  display: flex;
+  gap: 5px;
+  height: clamp(34px, 5.2vh, 48px);
+}
+.krow.fnrow { height: clamp(26px, 3.6vh, 34px); }
+
+.key {
+  flex: 1 1 0;
+  border: 0;
+  border-radius: var(--key-radius);
+  background: var(--key);
+  color: var(--text);
+  font-family: inherit;
+  font-size: clamp(14px, 2vh, 17px);
+  font-weight: 420;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 0 0 0.5px var(--key-edge), 0 1.5px 0 rgba(0, 0, 0, 0.35);
+  transition: background 0.08s;
+}
+@media (prefers-color-scheme: light) {
+  .key { box-shadow: 0 0 0 0.5px var(--key-edge), 0 1.5px 0 rgba(0, 0, 0, 0.18); }
+}
+.key.pressed {
+  background: var(--key-down);
+  transform: translateY(1px);
+  box-shadow: 0 0 0 0.5px var(--key-edge);
+}
+.key.mod-key {
+  background: var(--key-mod);
+  font-size: clamp(11px, 1.5vh, 13px);
+  color: var(--muted);
+}
+.key.fn-key {
+  background: var(--key-mod);
+  font-size: clamp(11px, 1.5vh, 13px);
+  color: var(--muted);
+}
+.key.active {
+  background: var(--accent);
+  color: #fff;
+}
+.key .hint {
+  position: absolute;
+  top: 3px;
+  right: 6px;
+  font-size: 9px;
+  color: var(--muted);
+  font-weight: 500;
+}
+.key.active .hint { color: rgba(255, 255, 255, 0.7); }
+
+/* cluster de flechas: ↑ y ↓ apiladas */
+.arrow-stack {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.arrow-stack .key {
+  flex: 1;
+  font-size: clamp(10px, 1.4vh, 12px);
+  border-radius: 5px;
+}
+
+/* ---- overlay de conexión ---- */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  display: grid;
+  place-items: center;
+  z-index: 10;
+}
+.overlay p {
+  color: var(--muted);
+  font-size: 16px;
+  font-weight: 500;
+}

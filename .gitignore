@@ -1,9 +1,5 @@
-.env
-.env.local
-js/env.generated.js
-
 node_modules/
-.netlify/
+.token
 .DS_Store
 Thumbs.db
 *.stackdump
