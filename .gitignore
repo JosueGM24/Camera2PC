@@ -1,5 +1,6 @@
 node_modules/
 .token
+.netlify/
 .DS_Store
 Thumbs.db
 *.stackdump
